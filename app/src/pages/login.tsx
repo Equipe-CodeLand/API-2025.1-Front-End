@@ -36,12 +36,14 @@ export default function Login() {
                 placeholder="Email"
                 value={email}
                 onChangeText={setEmail} 
+                placeholderTextColor="#939393"
             />
             <TextInput 
                 style={styles.input}
                 placeholder="Senha"
                 value={senha}
                 onChangeText={setSenha} 
+                placeholderTextColor="#939393"
             />
             <View style={styles.esqueceuSenha}><Text style={styles.esqueceuSenhaTexto}>Esqueci minha senha</Text></View>
             <View style={styles.btn}><Text style={styles.btnEntrar}>Entrar</Text></View>
@@ -76,8 +78,7 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     input: {
-        width: 188,
-        height: 24,
+        width: 228,
         margin: 21,
         borderRadius: 5,
         backgroundColor: '#FFF4F4',
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
     },
     esqueceuSenha: {
         alignSelf: 'flex-start',
-        marginLeft: 113, 
+        marginLeft: 91, 
         color: '#FFF4F4',
     },
     esqueceuSenhaTexto: {
@@ -110,7 +111,7 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         display: 'flex',
         justifyContent: 'center',
-        verticalAlign: 'middle',
+        textAlign: 'center',
         fontFamily: "Montserrat_500Medium", 
         paddingTop: 6,
     }
