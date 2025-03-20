@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useFonts, MontserratAlternates_400Regular, MontserratAlternates_800ExtraBold } from '@expo-google-fonts/montserrat-alternates';
 import AppLoading from 'expo-app-loading';
 import * as Linking from 'expo-linking';
@@ -8,10 +8,12 @@ import {
     Montserrat_500Medium,
     Montserrat_600SemiBold,
   } from '@expo-google-fonts/montserrat';
+import { useNavigation } from '@react-navigation/native';
 
-export default function Login() {
+const Login = () => {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    const navigation = useNavigation();
 
     let [fontsLoaded] = useFonts({
         MontserratAlternates_400Regular,
@@ -46,10 +48,13 @@ export default function Login() {
                 placeholderTextColor="#939393"
             />
             <View style={styles.esqueceuSenha}><Text style={styles.esqueceuSenhaTexto}>Esqueci minha senha</Text></View>
-            <View style={styles.btn}><Text style={styles.btnEntrar}>Entrar</Text></View>
+            <TouchableOpacity style={styles.btn} onPress={() => navigation.navigate('HomeDrawer')}>
+                <Text style={styles.btnEntrar}>Entrar</Text>
+            </TouchableOpacity>
         </View>
     );
 }
+export default Login
 
 const styles = StyleSheet.create({
     container: {

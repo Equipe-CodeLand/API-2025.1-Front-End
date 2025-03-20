@@ -1,9 +1,14 @@
-// app/index.tsx
 import React from 'react';
 import Login from './src/pages/login';
+import Routes from './routes/routes';
+import { StatusBar } from 'react-native';
 
-export default function Index() {
+const Index = () => {
   return (
-      <Login />
+    <>
+      <StatusBar backgroundColor="#00B6A3" barStyle="light-content" />
+      <Routes />
+    </>
   );
 }
+export default Index
