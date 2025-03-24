@@ -20,18 +20,15 @@ const AuthStack = () => {
   );
 };
 
-// Drawer para a navegação dentro do app
 const DrawerNavigator = ({ navigation }: any) => {
   return (
     <Drawer.Navigator
       initialRouteName="Home"
       drawerContent={(props) => (
-
         <View style={{ flex: 1, backgroundColor: '#00B6A3' }}>
           <DrawerContentScrollView {...props}>
             <DrawerItemList {...props} />
           </DrawerContentScrollView>
-          {/* Botão de Sair no final */}
           <DrawerItem
             label="Sair"
             labelStyle={{ color: '#fff' }}
@@ -39,7 +36,6 @@ const DrawerNavigator = ({ navigation }: any) => {
             style={{ margin: 10, borderRadius: 15 }}
           />
         </View>
-        
       )}
       screenOptions={{
         headerStyle: { backgroundColor: '#00B6A3' },
@@ -60,8 +56,7 @@ const DrawerNavigator = ({ navigation }: any) => {
 };
 
 const Routes = () => {
-  return (
-    <AuthStack />
-  );
+  return <AuthStack />;
 };
-export default Routes
+
+export default Routes;
