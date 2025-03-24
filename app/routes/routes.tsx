@@ -6,6 +6,7 @@ import Home from '../src/pages/home';
 import Profile from '../src/pages/profile';
 import { View } from 'react-native';
 import Chat from '../src/pages/chat';
+import CadastroAgentes from '../src/pages/cadastroAgente';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -53,6 +54,7 @@ const DrawerNavigator = ({ navigation }: any) => {
       <Drawer.Screen name="Home" component={Home} />
       <Drawer.Screen name="Profile" component={Profile} />
       <Drawer.Screen name="Chat" component={Chat} />
+      <Drawer.Screen name="Cadastro de Agente" component={CadastroAgentes} />
     </Drawer.Navigator>
   );
 };
