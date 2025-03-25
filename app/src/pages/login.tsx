@@ -9,6 +9,7 @@ import {
     Montserrat_500Medium,
     Montserrat_600SemiBold,
 } from '@expo-google-fonts/montserrat';
+import { API_URL } from '@env'; // Importa a variável de ambiente
 
 // Defina os tipos das suas rotas
 type RootStackParamList = {
@@ -43,7 +44,9 @@ export default function Login() {
         setLoading(true);
         
         try {
-            const response = await fetch('http://localhost:3000/api/login', {
+            const apiUrl = API_URL || 'http://localhost:3000';
+
+            const response = await fetch(`${apiUrl}/api/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
