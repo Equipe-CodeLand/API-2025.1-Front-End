@@ -1,20 +1,17 @@
 import React, { useState } from "react";
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
-import * as DocumentPicker from "expo-document-picker";
-import { useFonts, MontserratAlternates_400Regular, MontserratAlternates_800ExtraBold } from '@expo-google-fonts/montserrat-alternates';
+import { useFonts, Montserrat_400Regular, Montserrat_500Medium } from '@expo-google-fonts/montserrat';
 import AppLoading from 'expo-app-loading';
-import { Montserrat_400Regular, Montserrat_500Medium, Montserrat_600SemiBold } from '@expo-google-fonts/montserrat';
 import { Ionicons } from 'react-native-vector-icons';
+import * as DocumentPicker from 'expo-document-picker';
 
 const CadastroAgentes = () => {
     const [setor, setSetor] = useState("");
     const [assunto, setAssunto] = useState("");
     const [documento, setDocumento] = useState(null);
+    const [documentoNome, setDocumentoNome] = useState("");
 
     let [fontsLoaded] = useFonts({
-        MontserratAlternates_400Regular,
-        MontserratAlternates_800ExtraBold,
-        Montserrat_600SemiBold,
         Montserrat_400Regular,
         Montserrat_500Medium,
     });
@@ -30,23 +27,77 @@ const CadastroAgentes = () => {
                 copyToCacheDirectory: false,
             });
 
+            console.log("Resultado do DocumentPicker:", resultado);
+
             if (resultado.canceled) {
                 Alert.alert("Seleção cancelada");
                 return;
             }
 
-            setDocumento(resultado.uri);
-            Alert.alert("Arquivo selecionado", resultado.name);
+            const fileAsset = resultado.assets[0];
+
+            if (!fileAsset.uri) {
+                Alert.alert("Erro", "Nenhum arquivo selecionado.");
+                return;
+            }
+
+            const nomeArquivo = fileAsset.name || fileAsset.uri.split('/').pop();
+            const extensao = nomeArquivo.split('.').pop().toLowerCase();
+
+            if (extensao !== "csv") {
+                Alert.alert("Erro", "Por favor, selecione um arquivo CSV.");
+                return;
+            }
+
+            setDocumento(fileAsset.uri);
+            setDocumentoNome(nomeArquivo);
+
+            Alert.alert("Arquivo selecionado", nomeArquivo);
+
         } catch (err) {
             Alert.alert("Erro ao selecionar documento");
         }
     };
 
+    const handleSubmit = async () => {
+        if (!setor || !assunto || !documento) {
+            Alert.alert("Erro", "Todos os campos devem ser preenchidos.");
+            return;
+        }
 
-    const handleSubmit = () => {
-        Alert.alert("Cadastro enviado!", "Os dados foram registrados com sucesso.");
+        const nomeArquivo = documento.split('/').pop();
+
+        const formData = new FormData();
+        formData.append("setor", setor);
+        formData.append("assunto", assunto);
+        formData.append("documento", {
+            uri: documento,
+            type: 'application/csv',
+            name: nomeArquivo,
+        });
+
+        try {
+            const response = await fetch('http://192.168.0.178:3000/api/cadastro/agente', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('Falha ao enviar os dados');
+            }
+
+            const data = await response.json();
+            Alert.alert("Cadastro enviado!", "Os dados foram registrados com sucesso.");
+
+            setSetor("");
+            setAssunto("");
+            setDocumento(null);
+            setDocumentoNome("");
+
+        } catch (err) {
+            Alert.alert("Erro", err.message);
+        }
     };
-
 
     return (
         <View style={styles.container}>
@@ -84,7 +135,7 @@ const CadastroAgentes = () => {
                     </View>
                     <Text style={styles.btnTexto}>Upload de arquivo</Text>
                 </TouchableOpacity>
-                {documento && <Text style={styles.arquivoSelecionado}>Arquivo: {documento}</Text>}
+                {documentoNome && <Text style={styles.arquivoSelecionado}>Arquivo: {documentoNome}</Text>}
 
                 <Text style={styles.comentario}>* ATENÇÃO: O documento deve conter tabelas com os dados do setor como um todo e que contenha uma seção exclusiva para o assunto</Text>
             </View>
@@ -94,12 +145,10 @@ const CadastroAgentes = () => {
                     <Text style={styles.btnTexto}>Enviar</Text>
                 </TouchableOpacity>
             </View>
-
         </View>
     );
 };
 
-export default CadastroAgentes;
 
 const styles = StyleSheet.create({
     container: {
@@ -190,3 +239,5 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 });
+
+export default CadastroAgentes;
