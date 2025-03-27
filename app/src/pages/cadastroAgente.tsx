@@ -230,10 +230,10 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 20
-    },
+        marginTop: 240,
+        marginBottom: 30,
+      },    
     footer: {
-        position: 'absolute',
         bottom: 92,
         width: '100%',
         alignItems: 'center',
