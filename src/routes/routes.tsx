@@ -1,17 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerItemList } from "@react-navigation/drawer"
-import Login from '../src/pages/login';
-import Home from '../src/pages/home';
-import Profile from '../src/pages/profile';
 import { View } from 'react-native';
-import Chat from '../src/pages/chat';
-import CadastroAgentes from '../src/pages/cadastroAgente';
+import Login from '../pages/login';
+import Home from '../pages/home';
+import Profile from '../pages/profile';
+import Chat from '../pages/chat';
+import CadastroAgentes from '../pages/cadastroAgente';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
 const AuthStack = () => {
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadUserRole = async () => {
+      const role = await AsyncStorage.getItem('userRole');
+      setUserRole(role);
+    };
+    loadUserRole();
+  }, []);
+
+  if (userRole === null) {
+    return (
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Login" component={Login} />
+      </Stack.Navigator>
+    );
+  }
+
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Login" component={Login} />
@@ -22,16 +41,25 @@ const AuthStack = () => {
 
 // Drawer para a navegação dentro do app
 const DrawerNavigator = ({ navigation }: any) => {
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadUserRole = async () => {
+      const role = await AsyncStorage.getItem('userRole');
+      setUserRole(role); // Salva o role do usuário no estado
+    };
+
+    loadUserRole();
+  }, []);
+
   return (
     <Drawer.Navigator
       initialRouteName="Home"
       drawerContent={(props) => (
-
         <View style={{ flex: 1, backgroundColor: '#00B6A3' }}>
           <DrawerContentScrollView {...props}>
             <DrawerItemList {...props} />
           </DrawerContentScrollView>
-          {/* Botão de Sair no final */}
           <DrawerItem
             label="Sair"
             labelStyle={{ color: '#fff' }}
@@ -39,7 +67,6 @@ const DrawerNavigator = ({ navigation }: any) => {
             style={{ margin: 10, borderRadius: 15 }}
           />
         </View>
-        
       )}
       screenOptions={{
         headerStyle: { backgroundColor: '#00B6A3' },
@@ -54,7 +81,9 @@ const DrawerNavigator = ({ navigation }: any) => {
       <Drawer.Screen name="Home" component={Home} />
       <Drawer.Screen name="Profile" component={Profile} />
       <Drawer.Screen name="Chat" component={Chat} />
-      <Drawer.Screen name="Cadastro de Agente" component={CadastroAgentes} />
+      {userRole === 'admin' && ( // Se o usuário for admin, exibe a tela de cadastro
+        <Drawer.Screen name="Cadastro de Agente" component={CadastroAgentes} />
+      )}
     </Drawer.Navigator>
   );
 };
@@ -64,4 +93,5 @@ const Routes = () => {
     <AuthStack />
   );
 };
-export default Routes
+
+export default Routes;

@@ -1,7 +1,6 @@
 import React from 'react';
-import Login from './src/pages/login';
-import Routes from './routes/routes';
 import { StatusBar } from 'react-native';
+import Routes from '../src/routes/routes';
 
 const Index = () => {
   return (
