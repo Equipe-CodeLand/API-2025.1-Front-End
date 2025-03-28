@@ -5,7 +5,8 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-  StyleSheet
+  StyleSheet,
+  ActivityIndicator
 } from 'react-native';
 import { Message } from '../interface/Message';
 
@@ -14,34 +15,76 @@ const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([
     { id: 0, text: 'Olá! Como posso ajudar?', sender: 'bot' }
   ]);
+  const [loading, setLoading] = useState(false);
 
-  const sendMessage = () => {
+
+   const sendMessage = async () => {
     if (input.trim() === '') return;
 
-    const newMessage: Message = { id: messages.length, text: input, sender: 'user' };
-    setMessages([...messages, newMessage]);
+    // Adiciona mensagem do usuário
+    const userMessage: Message = { 
+      id: messages.length + 1, 
+      text: input, 
+      sender: 'user' 
+    };
+    setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setLoading(true);
 
-    setTimeout(() => {
-      const botResponse: Message = { id: messages.length + 1, text: 'Certo! O que você precisa?', sender: 'bot' };
-      setMessages(prevMessages => [...prevMessages, botResponse]);
-    }, 1000);
+    try {
+      // Enviar a mensagem para o backend FastAPI
+      const response = await fetch('http://10.0.2.2:8000/chat/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question: input })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Adiciona resposta do bot
+      const botResponse: Message = { 
+        id: messages.length + 2, 
+        text: data.response, 
+        sender: 'bot' 
+      };
+      setMessages(prev => [...prev, botResponse]);
+      
+    } catch (error) {
+      console.error('Erro ao se comunicar com o backend:', error);
+      // Adiciona mensagem de erro
+      const errorMessage: Message = { 
+        id: messages.length + 2, 
+        text: 'Desculpe, ocorreu um erro ao processar sua mensagem.', 
+        sender: 'bot' 
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <View
-      style={styles.container} 
-    >
+    <View style={styles.container}>
       {/* Mensagens */}
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <View style={[styles.messageContainer, item.sender === 'user' ? styles.userMessage : styles.botMessage]}>
+          <View style={[
+            styles.messageContainer, 
+            item.sender === 'user' ? styles.userMessage : styles.botMessage
+          ]}>
             <Text style={styles.messageText}>{item.text}</Text>
           </View>
         )}
         contentContainerStyle={styles.messagesList}
+        inverted={false}
       />
 
       {/* Campo de Entrada */}
@@ -52,14 +95,25 @@ const Chat = () => {
           placeholderTextColor="#888"
           value={input}
           onChangeText={setInput}
+          editable={!loading}
         />
-        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-          <Text style={styles.sendButtonText}>Enviar</Text>
+        
+        <TouchableOpacity 
+          style={styles.sendButton} 
+          onPress={sendMessage}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.sendButtonText}>Enviar</Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>
   );
 };
+
 
 export default Chat;
 
@@ -67,16 +121,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1A1A1A'
-  },
-  header: {
-    backgroundColor: '#00B6A3',
-    padding: 20,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#fff',
   },
   messagesList: {
     flexGrow: 1,
