@@ -23,41 +23,41 @@ const CadastroAgentes = () => {
     const selecionarDocumento = async () => {
         try {
             const resultado = await DocumentPicker.getDocumentAsync({
-                type: "text/csv",
-                copyToCacheDirectory: false,
+                type: "*/*",
             });
-
+    
             console.log("Resultado do DocumentPicker:", resultado);
-
+    
             if (resultado.canceled) {
                 Alert.alert("Seleção cancelada");
                 return;
             }
-
-            const fileAsset = resultado.assets[0];
-
-            if (!fileAsset.uri) {
+    
+            const fileAsset = resultado.assets?.[0];
+    
+            if (!fileAsset?.uri) {
                 Alert.alert("Erro", "Nenhum arquivo selecionado.");
                 return;
             }
-
+    
             const nomeArquivo = fileAsset.name || fileAsset.uri.split('/').pop();
             const extensao = nomeArquivo.split('.').pop().toLowerCase();
-
+    
             if (extensao !== "csv") {
                 Alert.alert("Erro", "Por favor, selecione um arquivo CSV.");
                 return;
             }
-
+    
             setDocumento(fileAsset.uri);
             setDocumentoNome(nomeArquivo);
-
+    
             Alert.alert("Arquivo selecionado", nomeArquivo);
-
+    
         } catch (err) {
-            Alert.alert("Erro ao selecionar documento");
+            Alert.alert("Erro ao selecionar documento", err.message);
         }
     };
+    
 
     const handleSubmit = async () => {
         if (!setor || !assunto || !documento) {
