@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from "react-native";
 import { useFonts, Montserrat_400Regular, Montserrat_500Medium } from '@expo-google-fonts/montserrat';
 import AppLoading from 'expo-app-loading';
 import { Ionicons } from 'react-native-vector-icons';
@@ -100,52 +100,53 @@ const CadastroAgentes = () => {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.cabecalho}>
-                <Text style={styles.titulo}>Cadastrar um agente</Text>
-            </View>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <View style={styles.container}>
+                <View style={styles.cabecalho}>
+                    <Text style={styles.titulo}>Cadastrar um agente</Text>
+                </View>
 
-            <View style={styles.inputContainer}>
-                <Text style={styles.label}>Nome do Setor</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Insira o nome do setor (Ex: RH)"
-                    value={setor}
-                    onChangeText={setSetor}
-                    placeholderTextColor="#939393"
-                />
-            </View>
+                <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Nome do Setor</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Insira o nome do setor (Ex: RH)"
+                        value={setor}
+                        onChangeText={setSetor}
+                        placeholderTextColor="#939393"
+                    />
+                </View>
 
-            <View style={styles.inputContainer}>
-                <Text style={styles.label}>Assunto</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Insira o tópico do assunto aqui (Ex: férias)"
-                    value={assunto}
-                    onChangeText={setAssunto}
-                    placeholderTextColor="#939393"
-                />
-            </View>
+                <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Assunto</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Insira o tópico do assunto aqui (Ex: férias)"
+                        value={assunto}
+                        onChangeText={setAssunto}
+                        placeholderTextColor="#939393"
+                    />
+                </View>
 
-            <View style={styles.uploadContainer}>
-                <Text style={styles.label}>Insira um documento do setor abaixo:</Text>
-                <TouchableOpacity style={styles.btn} onPress={selecionarDocumento}>
-                    <View style={styles.iconContainer}>
-                        <Ionicons name="add" size={24} color="#fff" />
-                    </View>
-                    <Text style={styles.btnTexto}>Upload de arquivo</Text>
-                </TouchableOpacity>
-                {documentoNome && <Text style={styles.arquivoSelecionado}>Arquivo: {documentoNome}</Text>}
+                <View style={styles.uploadContainer}>
+                    <Text style={styles.label}>Insira um documento do setor abaixo:</Text>
+                    <TouchableOpacity style={styles.btn} onPress={selecionarDocumento}>
+                        <View style={styles.iconContainer}>
+                            <Ionicons name="add" size={24} color="#fff" />
+                        </View>
+                        <Text style={styles.btnTexto}>Upload de arquivo</Text>
+                    </TouchableOpacity>
+                    {documentoNome && <Text style={styles.arquivoSelecionado}>Arquivo: {documentoNome}</Text>}
+                    <Text style={styles.comentario}>* ATENÇÃO: O documento deve conter tabelas com os dados do setor como um todo e que contenha uma seção exclusiva para o assunto</Text>
+                </View>
 
-                <Text style={styles.comentario}>* ATENÇÃO: O documento deve conter tabelas com os dados do setor como um todo e que contenha uma seção exclusiva para o assunto</Text>
+                <View style={styles.footer}>
+                    <TouchableOpacity style={styles.btnEnviar} onPress={handleSubmit}>
+                        <Text style={styles.btnTexto}>Enviar</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
-
-            <View style={styles.footer}>
-                <TouchableOpacity style={styles.btnEnviar} onPress={handleSubmit}>
-                    <Text style={styles.btnTexto}>Enviar</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+        </ScrollView>
     );
 };
 
@@ -157,6 +158,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#1A1A1A',
         paddingTop: 80,
+    },
+    scrollContainer: {
+        flexGrow: 1,
     },
     cabecalho: {
         display: 'flex',
