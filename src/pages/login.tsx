@@ -21,7 +21,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://192.168.0.11:3000/login', {
+      const response = await fetch('http://192.168.0.178:3000/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -40,7 +40,7 @@ const Login = () => {
         await AsyncStorage.setItem('userRole', data.role);
   
         // Navegar para a tela HomeDrawer
-        navigation.navigate('HomeDrawer'); // Isso garante que o app navegue para a Home após o login
+        navigation.navigate('Home'); // Isso garante que o app navegue para a Home após o login
       } else {
         Alert.alert('Erro', 'Email ou senha inválidos');
       }

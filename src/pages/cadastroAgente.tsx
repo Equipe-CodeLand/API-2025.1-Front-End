@@ -24,82 +24,83 @@ const CadastroAgentes = () => {
         try {
             const resultado = await DocumentPicker.getDocumentAsync({
                 type: "text/csv",
-                copyToCacheDirectory: false,
             });
-
+    
             console.log("Resultado do DocumentPicker:", resultado);
-
-            if (resultado.canceled) {
-                Alert.alert("Seleção cancelada");
-                return;
-            }
-
-            const fileAsset = resultado.assets[0];
-
-            if (!fileAsset.uri) {
+    
+            if (!resultado.assets || resultado.assets.length === 0) {
                 Alert.alert("Erro", "Nenhum arquivo selecionado.");
                 return;
             }
-
-            const nomeArquivo = fileAsset.name || fileAsset.uri.split('/').pop();
-            const extensao = (nomeArquivo ?? "").split('.').pop()?.toLowerCase();
-
-            if (extensao !== "csv") {
-                Alert.alert("Erro", "Por favor, selecione um arquivo CSV.");
+    
+            const fileAsset = resultado.assets[0];
+    
+            if (!fileAsset.uri) {
+                Alert.alert("Erro", "URI do arquivo não encontrada.");
                 return;
             }
-
+    
             setDocumento(fileAsset.uri);
-            setDocumentoNome(nomeArquivo ?? "");
-
-            Alert.alert("Arquivo selecionado", nomeArquivo);
-
+            setDocumentoNome(fileAsset.name || fileAsset.uri.split('/').pop());
+    
+            Alert.alert("Arquivo selecionado", fileAsset.name);
+    
         } catch (err) {
-            Alert.alert("Erro ao selecionar documento");
+            Alert.alert("Erro ao selecionar documento", (err as Error).message);
         }
-    };
+    };    
+    
 
     const handleSubmit = async () => {
         if (!setor || !assunto || !documento) {
             Alert.alert("Erro", "Todos os campos devem ser preenchidos.");
             return;
         }
-
+    
         const nomeArquivo = documento.split('/').pop();
-
+    
         const formData = new FormData();
         formData.append("setor", setor);
         formData.append("assunto", assunto);
+    
         const file = {
             uri: documento,
-            type: 'application/csv',
+            type: "text/csv",
             name: nomeArquivo,
-        } as any;
-
+        };
+    
         formData.append("documento", file);
-
+    
         try {
-            const response = await fetch(`http://192.168.0.11:3000/api/cadastro/agente`, {
-                method: 'POST',
+            const response = await fetch("http://192.168.0.178:3000/cadastro/agente", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    "Accept": "application/json"
+                },
                 body: formData,
             });
-
+    
+            const responseData = await response.json();
+            console.log("Resposta da API:", responseData);
+    
             if (!response.ok) {
-                throw new Error('Falha ao enviar os dados');
+                throw new Error(responseData.message || "Erro ao enviar dados");
             }
-
-            const data = await response.json();
+    
             Alert.alert("Cadastro enviado!", "Os dados foram registrados com sucesso.");
-
+    
             setSetor("");
             setAssunto("");
             setDocumento(null);
             setDocumentoNome("");
-
+    
         } catch (err) {
-            Alert.alert("Erro", (err as Error).message);
+            Alert.alert("Erro ao enviar", err.message);
         }
     };
+    
+    
 
     return (
         <View style={styles.container}>
