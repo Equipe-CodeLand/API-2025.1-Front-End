@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { useFonts, Montserrat_400Regular, Montserrat_500Medium } from '@expo-google-fonts/montserrat';
 import AppLoading from 'expo-app-loading';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 
 const CadastroAgentes = () => {
     const [setor, setSetor] = useState("");
     const [assunto, setAssunto] = useState("");
-    const [documento, setDocumento] = useState<string | null>(null);
+    const [documento, setDocumento] = useState(null);
     const [documentoNome, setDocumentoNome] = useState("");
 
     let [fontsLoaded] = useFonts({
@@ -23,32 +23,40 @@ const CadastroAgentes = () => {
     const selecionarDocumento = async () => {
         try {
             const resultado = await DocumentPicker.getDocumentAsync({
-                type: "text/csv",
+                type: "*/*",
             });
     
             console.log("Resultado do DocumentPicker:", resultado);
     
-            if (!resultado.assets || resultado.assets.length === 0) {
+            if (resultado.canceled) {
+                Alert.alert("Seleção cancelada");
+                return;
+            }
+    
+            const fileAsset = resultado.assets?.[0];
+    
+            if (!fileAsset?.uri) {
                 Alert.alert("Erro", "Nenhum arquivo selecionado.");
                 return;
             }
     
-            const fileAsset = resultado.assets[0];
+            const nomeArquivo = fileAsset.name || fileAsset.uri.split('/').pop();
+            const extensao = nomeArquivo.split('.').pop().toLowerCase();
     
-            if (!fileAsset.uri) {
-                Alert.alert("Erro", "URI do arquivo não encontrada.");
+            if (extensao !== "csv") {
+                Alert.alert("Erro", "Por favor, selecione um arquivo CSV.");
                 return;
             }
     
             setDocumento(fileAsset.uri);
-            setDocumentoNome(fileAsset.name || fileAsset.uri.split('/').pop());
+            setDocumentoNome(nomeArquivo);
     
-            Alert.alert("Arquivo selecionado", fileAsset.name);
+            Alert.alert("Arquivo selecionado", nomeArquivo);
     
         } catch (err) {
-            Alert.alert("Erro ao selecionar documento", (err as Error).message);
+            Alert.alert("Erro ao selecionar documento", err.message);
         }
-    };    
+    };
     
 
     const handleSubmit = async () => {
@@ -56,51 +64,40 @@ const CadastroAgentes = () => {
             Alert.alert("Erro", "Todos os campos devem ser preenchidos.");
             return;
         }
-    
+
         const nomeArquivo = documento.split('/').pop();
-    
+
         const formData = new FormData();
         formData.append("setor", setor);
         formData.append("assunto", assunto);
-    
-        const file = {
+        formData.append("documento", {
             uri: documento,
-            type: "text/csv",
+            type: 'application/csv',
             name: nomeArquivo,
-        };
-    
-        formData.append("documento", file);
-    
+        });
+
         try {
-            const response = await fetch("http://192.168.0.178:3000/cadastro/agente", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                    "Accept": "application/json"
-                },
+            const response = await fetch('http://192.168.0.178:3000/cadastro/agente', {
+                method: 'POST',
                 body: formData,
             });
-    
-            const responseData = await response.json();
-            console.log("Resposta da API:", responseData);
-    
+
             if (!response.ok) {
-                throw new Error(responseData.message || "Erro ao enviar dados");
+                throw new Error('Falha ao enviar os dados');
             }
-    
+
+            const data = await response.json();
             Alert.alert("Cadastro enviado!", "Os dados foram registrados com sucesso.");
-    
+
             setSetor("");
             setAssunto("");
             setDocumento(null);
             setDocumentoNome("");
-    
+
         } catch (err) {
-            Alert.alert("Erro ao enviar", err.message);
+            Alert.alert("Erro", err.message);
         }
     };
-    
-    
 
     return (
         <View style={styles.container}>
