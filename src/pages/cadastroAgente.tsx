@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from "react-native";
 import { useFonts, Montserrat_400Regular, Montserrat_500Medium } from '@expo-google-fonts/montserrat';
 import AppLoading from 'expo-app-loading';
-import { Ionicons } from 'react-native-vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as DocumentPicker from 'expo-document-picker';
 
 const CadastroAgentes = () => {
     const [setor, setSetor] = useState("");
     const [assunto, setAssunto] = useState("");
-    const [documento, setDocumento] = useState(null);
+    const [documento, setDocumento] = useState<string | null>(null);
     const [documentoNome, setDocumentoNome] = useState("");
 
     let [fontsLoaded] = useFonts({
@@ -41,7 +41,7 @@ const CadastroAgentes = () => {
             }
     
             const nomeArquivo = fileAsset.name || fileAsset.uri.split('/').pop();
-            const extensao = nomeArquivo.split('.').pop().toLowerCase();
+            const extensao = (nomeArquivo ?? "").split('.').pop()?.toLowerCase();
     
             if (extensao !== "csv") {
                 Alert.alert("Erro", "Por favor, selecione um arquivo CSV.");
@@ -49,12 +49,12 @@ const CadastroAgentes = () => {
             }
     
             setDocumento(fileAsset.uri);
-            setDocumentoNome(nomeArquivo);
+            setDocumentoNome(nomeArquivo ?? "");
     
             Alert.alert("Arquivo selecionado", nomeArquivo);
     
         } catch (err) {
-            Alert.alert("Erro ao selecionar documento", err.message);
+            Alert.alert("Erro ao selecionar documento", err instanceof Error ? err.message : "Erro desconhecido");
         }
     };
     
@@ -70,14 +70,16 @@ const CadastroAgentes = () => {
         const formData = new FormData();
         formData.append("setor", setor);
         formData.append("assunto", assunto);
-        formData.append("documento", {
+        const file = {
             uri: documento,
             type: 'application/csv',
             name: nomeArquivo,
-        });
+        } as any;
+
+        formData.append("documento", file);
 
         try {
-            const response = await fetch('http://192.168.0.178:3000/cadastro/agente', {
+            const response = await fetch('http://192.168.0.11:3000/cadastro/agente', {
                 method: 'POST',
                 body: formData,
             });
@@ -95,7 +97,7 @@ const CadastroAgentes = () => {
             setDocumentoNome("");
 
         } catch (err) {
-            Alert.alert("Erro", err.message);
+            Alert.alert("Erro", err instanceof Error ? err.message : "Erro desconhecido");
         }
     };
 

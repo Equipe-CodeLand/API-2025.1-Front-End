@@ -16,7 +16,7 @@ const ListagemAgentes = () => {
                 return;
             }
 
-            const response = await fetch("http://192.168.0.178:3000/agentes", {
+            const response = await fetch("http:/192.168.0.11:3000/agentes", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
