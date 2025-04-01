@@ -11,6 +11,7 @@ const CadastroUsuario = () => {
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
     const [tipo, setTipo] = useState("");
+    const [senhaValida, setSenhaValida] = useState(true); 
 
     let [fontsLoaded] = useFonts({
         Montserrat_400Regular,
@@ -21,34 +22,46 @@ const CadastroUsuario = () => {
         return <AppLoading />;
     }
 
+    const validarSenha = (senha: string) => {
+        // Expressão regular para validar a senha
+        const regex = /^(?=.*[!@#$%^&*])(?=.*\d)[A-Za-z\d!@#$%^&*]{8,}$/;
+        setSenhaValida(regex.test(senha)); // Atualiza o estado com base na validação
+        setSenha(senha); // Atualiza o estado da senha
+    };
+
     const handleSubmit = async () => {
         if (!nome || !email || !senha || !tipo) {
             alert("Por favor, preencha todos os campos.");
             return;
         }
-    
+
+        if (!senhaValida) {
+            alert("A senha deve ter pelo menos 8 caracteres, incluir um número e um caractere especial.");
+            return;
+        }
+
         const token = await AsyncStorage.getItem("userToken");
         if (!token) {
             console.error("Token não encontrado.");
             alert("Erro de autenticação. Faça login novamente.");
             return;
         }
-    
+
         // Certifique-se de que o tipo está definido corretamente
         if (!['admin', 'user'].includes(tipo)) {
             alert("Por favor, selecione um cargo válido para o usuário.");
             return;
         }
-    
+
         const dados = {
             nome,
             email,
             senha,
             cargo: tipo, // Alterado de 'role' para 'cargo'
         };
-    
+
         console.log("Dados enviados:", dados);
-    
+
         try {
             const response = await fetch('http://192.168.0.11:3000/cadastro/usuario', {
                 method: 'POST',
@@ -58,20 +71,20 @@ const CadastroUsuario = () => {
                 },
                 body: JSON.stringify(dados),
             });
-    
+
             console.log("Resposta completa do servidor:", response);
-    
+
             if (!response.ok) {
                 const errorData = await response.json();
                 console.error("Erro ao cadastrar usuário:", errorData);
                 alert(`Erro ao cadastrar usuário: ${errorData.error || 'Tente novamente.'}`);
                 return;
             }
-    
+
             const responseData = await response.json();
             alert("Usuário cadastrado com sucesso!");
             console.log("Resposta do servidor:", responseData);
-    
+
             // Limpar os campos após o sucesso
             setNome("");
             setEmail("");
@@ -116,11 +129,17 @@ const CadastroUsuario = () => {
                     <Text style={styles.label}>Senha do Usuário</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Insira o senha do usuário"
+                        placeholder="Insira a senha do usuário"
                         value={senha}
-                        onChangeText={setSenha}
+                        onChangeText={validarSenha} // Chama a função de validação ao alterar o texto
                         placeholderTextColor="#939393"
+                        secureTextEntry // Oculta o texto da senha
                     />
+                    {!senhaValida && (
+                        <Text style={styles.aviso}>
+                            ATENÇÃO: Digite uma senha que contenha pelo menos 8 caracteres, um número e um caractere especial.
+                        </Text>
+                    )}
                 </View>
 
                 <View style={styles.inputContainer}>
@@ -177,6 +196,12 @@ const styles = StyleSheet.create({
     },
     select: {
         color: '#fff',
+    },
+    aviso: {
+        color: '#939393',
+        fontSize: 14,
+        marginTop: 5,
+        fontFamily: "Montserrat_400Regular",
     },
     label: {
         color: '#fff',
