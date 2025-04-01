@@ -11,7 +11,8 @@ const CadastroUsuario = () => {
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
     const [tipo, setTipo] = useState("");
-    const [senhaValida, setSenhaValida] = useState(true); 
+    const [senhaValida, setSenhaValida] = useState(true);
+    const [emailValido, setEmailValido] = useState(true); 
 
     let [fontsLoaded] = useFonts({
         Montserrat_400Regular,
@@ -22,16 +23,26 @@ const CadastroUsuario = () => {
         return <AppLoading />;
     }
 
+    const validarEmail = (email: string) => {
+        const regex = /^[a-zA-Z0-9._%+-]+@(gmail|outlook|yahoo|hotmail)$/;
+        setEmailValido(regex.test(email)); 
+        setEmail(email);
+    };
+
     const validarSenha = (senha: string) => {
-        // Expressão regular para validar a senha
         const regex = /^(?=.*[!@#$%^&*])(?=.*\d)[A-Za-z\d!@#$%^&*]{8,}$/;
-        setSenhaValida(regex.test(senha)); // Atualiza o estado com base na validação
-        setSenha(senha); // Atualiza o estado da senha
+        setSenhaValida(regex.test(senha)); 
+        setSenha(senha); 
     };
 
     const handleSubmit = async () => {
         if (!nome || !email || !senha || !tipo) {
             alert("Por favor, preencha todos os campos.");
+            return;
+        }
+
+        if (!emailValido) {
+            alert("Por favor, insira um e-mail válido (ex: @gmail, @outlook, @yahoo, @hotmail).");
             return;
         }
 
@@ -120,9 +131,14 @@ const CadastroUsuario = () => {
                         style={styles.input}
                         placeholder="Insira o email do usuário"
                         value={email}
-                        onChangeText={setEmail}
+                        onChangeText={validarEmail} // Chama a função de validação ao alterar o texto
                         placeholderTextColor="#939393"
                     />
+                    {!emailValido && (
+                        <Text style={styles.aviso}>
+                            Por favor, insira um e-mail válido (ex: gmail.com, outlook.com, yahoo.com, hotmail.com).
+                        </Text>
+                    )}
                 </View>
 
                 <View style={styles.inputContainer}>
@@ -145,13 +161,14 @@ const CadastroUsuario = () => {
                 <View style={styles.inputContainer}>
                     <Text style={styles.label}>Cargo do Usuário</Text>
                     <RNPickerSelect
-                        onValueChange={(value) => setTipo(value)} 
+                        onValueChange={(value) => setTipo(value)} // Atualiza o estado 'tipo'
+                        value={tipo} // Define o valor atual do select
                         style={{
                             inputIOS: { color: '#fff' },
                             inputAndroid: { color: '#fff' },
                         }}
                         items={[
-                            { label: '', value: '' },
+                            { label: 'Selecione um cargo', value: '' }, // Valor inicial
                             { label: 'Administrador', value: 'admin' },
                             { label: 'Usuário', value: 'user' },
                         ]}
