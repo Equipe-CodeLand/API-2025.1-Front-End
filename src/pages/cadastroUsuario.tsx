@@ -24,8 +24,8 @@ const CadastroUsuario = () => {
     }
 
     const validarEmail = (email: string) => {
-        const regex = /^[a-zA-Z0-9._%+-]+@$/;
-        setEmailValido(regex.test(email)); 
+        const contemArroba = email.includes('@');
+        setEmailValido(contemArroba); 
         setEmail(email);
     };
 
