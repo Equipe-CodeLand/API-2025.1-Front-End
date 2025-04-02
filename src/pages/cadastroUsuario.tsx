@@ -24,7 +24,7 @@ const CadastroUsuario = () => {
     }
 
     const validarEmail = (email: string) => {
-        const regex = /^[a-zA-Z0-9._%+-]+@(gmail|outlook|yahoo|hotmail)$/;
+        const regex = /^[a-zA-Z0-9._%+-]+@$/;
         setEmailValido(regex.test(email)); 
         setEmail(email);
     };
@@ -42,7 +42,7 @@ const CadastroUsuario = () => {
         }
 
         if (!emailValido) {
-            alert("Por favor, insira um e-mail válido (ex: @gmail, @outlook, @yahoo, @hotmail).");
+            alert("Por favor, insira um e-mail válido que utilize '@'.");
             return;
         }
 
@@ -68,7 +68,7 @@ const CadastroUsuario = () => {
             nome,
             email,
             senha,
-            cargo: tipo, // Alterado de 'role' para 'cargo'
+            cargo: tipo, 
         };
 
         console.log("Dados enviados:", dados);
@@ -131,12 +131,12 @@ const CadastroUsuario = () => {
                         style={styles.input}
                         placeholder="Insira o email do usuário"
                         value={email}
-                        onChangeText={validarEmail} // Chama a função de validação ao alterar o texto
+                        onChangeText={validarEmail} 
                         placeholderTextColor="#939393"
                     />
                     {!emailValido && (
                         <Text style={styles.aviso}>
-                            Por favor, insira um e-mail válido (ex: gmail.com, outlook.com, yahoo.com, hotmail.com).
+                            Por favor, insira um e-mail válido  que utilize '@'.
                         </Text>
                     )}
                 </View>
@@ -147,9 +147,9 @@ const CadastroUsuario = () => {
                         style={styles.input}
                         placeholder="Insira a senha do usuário"
                         value={senha}
-                        onChangeText={validarSenha} // Chama a função de validação ao alterar o texto
+                        onChangeText={validarSenha}
                         placeholderTextColor="#939393"
-                        secureTextEntry // Oculta o texto da senha
+                        secureTextEntry 
                     />
                     {!senhaValida && (
                         <Text style={styles.aviso}>
@@ -161,14 +161,13 @@ const CadastroUsuario = () => {
                 <View style={styles.inputContainer}>
                     <Text style={styles.label}>Cargo do Usuário</Text>
                     <RNPickerSelect
-                        onValueChange={(value) => setTipo(value)} // Atualiza o estado 'tipo'
-                        value={tipo} // Define o valor atual do select
+                        onValueChange={(value) => setTipo(value)}
+                        value={tipo}
                         style={{
                             inputIOS: { color: '#fff' },
                             inputAndroid: { color: '#fff' },
                         }}
                         items={[
-                            { label: 'Selecione um cargo', value: '' }, // Valor inicial
                             { label: 'Administrador', value: 'admin' },
                             { label: 'Usuário', value: 'user' },
                         ]}
