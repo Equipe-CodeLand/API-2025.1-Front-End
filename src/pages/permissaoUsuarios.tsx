@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRoute } from "@react-navigation/native";
 import { CheckBox } from "react-native-elements"; 
 import { useEffect, useState } from "react";
+import { API_URL } from '@env'; // <- aqui a mágica acontece
 
 const PermissaoUsuarioPainel = () => {
   const route = useRoute();
@@ -22,7 +23,7 @@ const PermissaoUsuarioPainel = () => {
         }
 
         const response = await fetch(
-          `http://192.168.0.178:3000/agentes/${agenteId}/usuarios`,
+          `${API_URL}/agentes/${agenteId}/usuarios`,
           {
             method: "GET",
             headers: {
@@ -71,8 +72,8 @@ const PermissaoUsuarioPainel = () => {
       }
 
       const url = isChecked
-        ? `http://192.168.0.178:3000/agentes/${usuarioId}/habilitar`
-        : `http://192.168.0.178:3000/agentes/${usuarioId}/desabilitar`;
+        ? `${API_URL}/agentes/${usuarioId}/habilitar`
+        : `${API_URL}/agentes/${usuarioId}/desabilitar`;
 
       const response = await fetch(url, {
         method: "PUT",
@@ -119,7 +120,7 @@ const PermissaoUsuarioPainel = () => {
       }
 
       for (const usuario of usuarios) {
-        await fetch(`http://192.168.0.178:3000/agentes/${usuario.id}/desabilitar`, {
+        await fetch(`${API_URL}/agentes/${usuario.id}/desabilitar`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

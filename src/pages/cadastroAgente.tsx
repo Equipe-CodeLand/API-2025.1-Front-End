@@ -4,6 +4,7 @@ import { useFonts, Montserrat_400Regular, Montserrat_500Medium } from '@expo-goo
 import AppLoading from 'expo-app-loading';
 import { Ionicons } from 'react-native-vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
+import { API_URL } from '@env'; // <- aqui a mágica acontece
 
 const CadastroAgentes = () => {
     const [setor, setSetor] = useState("");
@@ -25,39 +26,36 @@ const CadastroAgentes = () => {
             const resultado = await DocumentPicker.getDocumentAsync({
                 type: "*/*",
             });
-    
-            console.log("Resultado do DocumentPicker:", resultado);
-    
+
             if (resultado.canceled) {
                 Alert.alert("Seleção cancelada");
                 return;
             }
-    
+
             const fileAsset = resultado.assets?.[0];
-    
+
             if (!fileAsset?.uri) {
                 Alert.alert("Erro", "Nenhum arquivo selecionado.");
                 return;
             }
-    
+
             const nomeArquivo = fileAsset.name || fileAsset.uri.split('/').pop();
             const extensao = nomeArquivo.split('.').pop().toLowerCase();
-    
+
             if (extensao !== "csv") {
                 Alert.alert("Erro", "Por favor, selecione um arquivo CSV.");
                 return;
             }
-    
+
             setDocumento(fileAsset.uri);
             setDocumentoNome(nomeArquivo);
-    
+
             Alert.alert("Arquivo selecionado", nomeArquivo);
-    
+
         } catch (err) {
             Alert.alert("Erro ao selecionar documento", err.message);
         }
     };
-    
 
     const handleSubmit = async () => {
         if (!setor || !assunto || !documento) {
@@ -77,7 +75,7 @@ const CadastroAgentes = () => {
         });
 
         try {
-            const response = await fetch('http://192.168.0.178:3000/cadastro/agente', {
+            const response = await fetch(`${API_URL}/cadastro/agente`, {
                 method: 'POST',
                 body: formData,
             });
@@ -149,7 +147,6 @@ const CadastroAgentes = () => {
         </ScrollView>
     );
 };
-
 
 const styles = StyleSheet.create({
     container: {
@@ -236,7 +233,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 240,
         marginBottom: 30,
-      },    
+    },
     footer: {
         bottom: 92,
         width: '100%',

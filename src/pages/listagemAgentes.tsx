@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { StyleSheet, Text, View, FlatList, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
+import { API_URL } from '@env'; // <- aqui a mágica acontece
 
 const ListagemAgentes = () => {
     const [agentes, setAgentes] = useState<any[]>([]);
@@ -16,7 +17,7 @@ const ListagemAgentes = () => {
                 return;
             }
 
-            const response = await fetch("http://192.168.0.178:3000/agentes", {
+            const response = await fetch(`${API_URL}/agentes`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
