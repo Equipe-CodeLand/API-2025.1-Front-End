@@ -87,10 +87,15 @@ const CadastroUsuario = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error("Erro ao cadastrar usuário:", errorData);
-                alert(`Erro ao cadastrar usuário: ${errorData.error || 'Tente novamente.'}`);
+                console.log("Erro ao cadastrar usuário:", errorData);
+            
+                if (errorData.message === "E-mail já cadastrado.") {
+                    alert("Este e-mail já está cadastrado. Por favor, use outro.");
+                } else {
+                    alert(`Erro ao cadastrar usuário: ${errorData.message || 'Tente novamente.'}`);
+                }
                 return;
-            }
+            }                     
 
             const responseData = await response.json();
             alert("Usuário cadastrado com sucesso!");
