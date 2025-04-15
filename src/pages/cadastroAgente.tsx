@@ -4,7 +4,7 @@ import { useFonts, Montserrat_400Regular, Montserrat_500Medium } from '@expo-goo
 import AppLoading from 'expo-app-loading';
 import { Ionicons } from 'react-native-vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
-import { API_URL } from '@env'; // <- aqui a mágica acontece
+import { API_URL } from '@env'; 
 
 const CadastroAgentes = () => {
     const [setor, setSetor] = useState("");
