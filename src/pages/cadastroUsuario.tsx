@@ -74,7 +74,7 @@ const CadastroUsuario = () => {
         console.log("Dados enviados:", dados);
 
         try {
-            const response = await fetch('http://192.168.0.11:3000/cadastro/usuario', {
+            const response = await fetch('http://192.168.0.178:3000/cadastro/usuario', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
