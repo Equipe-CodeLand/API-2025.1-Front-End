@@ -4,6 +4,7 @@ import { useFonts, MontserratAlternates_400Regular, MontserratAlternates_800Extr
 import AppLoading from 'expo-app-loading';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import { API_URL } from '@env'; 
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -21,7 +22,8 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://192.168.0.11:3000/login', {
+
+      const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
