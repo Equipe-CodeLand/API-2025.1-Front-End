@@ -10,6 +10,7 @@ import CadastroAgentes from '../pages/cadastroAgente';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ListagemAgentes from '../pages/listagemAgentes';
 import PermissaoUsuarioPainel from '../pages/permissaoUsuarios';
+import CadastroUsuario from '../pages/cadastroUsuario';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -59,6 +60,7 @@ const DrawerNavigator = ({ navigation }: any) => {
         <>
           <Drawer.Screen name="Cadastro de Agente" component={CadastroAgentes} />
           <Drawer.Screen name="Painel de Agentes" component={ListagemAgentes} />
+          <Drawer.Screen name="Cadastro de Usuário" component={CadastroUsuario} />
           <Drawer.Screen
             name="Tela de permissões"
             component={PermissaoUsuarioPainel}

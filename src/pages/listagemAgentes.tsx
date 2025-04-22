@@ -18,6 +18,7 @@ const ListagemAgentes = () => {
             }
 
             const response = await fetch(`${API_URL}/agentes`, {
+
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",

@@ -24,6 +24,7 @@ const PermissaoUsuarioPainel = () => {
 
         const response = await fetch(
           `${API_URL}/agentes/${agenteId}/usuarios`,
+
           {
             method: "GET",
             headers: {
