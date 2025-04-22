@@ -4,16 +4,37 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { useFonts, Montserrat_400Regular, Montserrat_500Medium } from '@expo-google-fonts/montserrat';
 import AppLoading from 'expo-app-loading';
+import { RefreshControl } from "react-native";
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 const ListagemUsuarios = () => {
     const [usuarios, setUsuarios] = useState<any[]>([]);
     const [dropdownAberto, setDropdownAberto] = useState<number | null>(null);
     const [mostrarSenhaId, setMostrarSenhaId] = useState<number | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     let [fontsLoaded] = useFonts({
         Montserrat_400Regular,
         Montserrat_500Medium,
     });
+
+    const onRefresh = async () => {
+        setIsRefreshing(true);
+        try {
+            await handleBuscarUsuarios(); // já faz o fetch certinho
+        } catch (error) {
+            console.log(`Erro ao buscar usuários: ${error}`);
+        } finally {
+            setIsRefreshing(false);
+        }
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+            handleBuscarUsuarios();
+        }, [])
+    );    
 
     const handleBuscarUsuarios = async () => {
         try {
@@ -24,7 +45,7 @@ const ListagemUsuarios = () => {
                 return;
             }
 
-            const response = await fetch("http://192.168.0.178:3000/usuarios", {
+            const response = await fetch("http://192.168.5.239:3000/usuarios", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -73,6 +94,9 @@ const ListagemUsuarios = () => {
             <FlatList
                 data={usuarios}
                 keyExtractor={(item) => item.id.toString()}
+                refreshControl={
+                    <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+                }
                 renderItem={({ item }) => {
                     const isAberto = dropdownAberto === item.id;
                     const mostrarSenha = mostrarSenhaId === item.id;
@@ -180,7 +204,7 @@ const styles = StyleSheet.create({
         marginBottom: 64,
     },
     titulo: {
-        fontSize: 30,
+        fontSize: 28,
         fontWeight: "500",
         color: "#fff",
         fontFamily: "Montserrat_500Medium",
@@ -263,7 +287,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         justifyContent: "center",
         alignItems: "center",
-        flex: 0.35,
+        flex: 0.50,
     },
     botaoAtualizar: {
         backgroundColor: "#0B8D7F",
