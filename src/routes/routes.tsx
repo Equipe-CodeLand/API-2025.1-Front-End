@@ -9,6 +9,7 @@ import Chat from '../pages/chat';
 import CadastroAgentes from '../pages/cadastroAgente';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ListagemAgentes from '../pages/listagemAgentes';
+import ListagemUsuarios from '../pages/listagemUsuario';
 import PermissaoUsuarioPainel from '../pages/permissaoUsuarios';
 import CadastroUsuario from '../pages/cadastroUsuario';
 
@@ -61,6 +62,7 @@ const DrawerNavigator = ({ navigation }: any) => {
           <Drawer.Screen name="Cadastro de Agente" component={CadastroAgentes} />
           <Drawer.Screen name="Painel de Agentes" component={ListagemAgentes} />
           <Drawer.Screen name="Cadastro de Usuário" component={CadastroUsuario} />
+          <Drawer.Screen name="Painel de Usuários" component={ListagemUsuarios} />
           <Drawer.Screen
             name="Tela de permissões"
             component={PermissaoUsuarioPainel}
