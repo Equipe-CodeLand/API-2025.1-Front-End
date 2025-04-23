@@ -36,15 +36,13 @@ const Login = () => {
   
       const data = await response.json();
       
-      if (data.message === "Login bem-sucedido") {
+      if (response.ok && data.message === "Login bem-sucedido") {
         // Salvar o token e o role do usuário
         await AsyncStorage.setItem('userToken', data.token);
         await AsyncStorage.setItem('userRole', data.role);
-  
-        // Navegar para a tela HomeDrawer
-        navigation.navigate('Home'); // Isso garante que o app navegue para a Home após o login
+        navigation.navigate('Home'); 
       } else {
-        Alert.alert('Erro', 'Email ou senha inválidos');
+        Alert.alert('Erro', data.message || 'Email ou senha inválidos');
       }
     } catch (error) {
       Alert.alert('Erro', 'Ocorreu um erro. Tente novamente.');

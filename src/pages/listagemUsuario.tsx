@@ -37,6 +37,34 @@ const ListagemUsuarios = () => {
         }, [])
     );    
 
+    const handleToggleStatus = async (id: number, statusAtual: boolean) => {
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+
+            const response = await fetch(`${API_URL}/usuarios/${id}/status`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify({ ativo: !statusAtual }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert(result.message);
+                handleBuscarUsuarios(); // atualiza a lista
+            } else {
+                alert("Erro: " + result.message);
+            }
+        } catch (error) {
+            console.error("Erro ao atualizar status do usuário:", error);
+            alert("Erro ao atualizar status.");
+        }
+    };
+
+    
     const handleBuscarUsuarios = async () => {
         try {
             const token = await AsyncStorage.getItem("userToken");
@@ -103,7 +131,7 @@ const ListagemUsuarios = () => {
                     const mostrarSenha = mostrarSenhaId === item.id;
 
                     return (
-                        <View style={styles.usuario}>
+                        <View style={item.ativo ? styles.usuario : styles.usuarioDesativado}>
                             <TouchableOpacity
                                 style={styles.dropdownHeader}
                                 onPress={() => toggleDropdown(item.id)}
@@ -119,25 +147,22 @@ const ListagemUsuarios = () => {
 
                             {isAberto && (
                                 <View style={styles.dropdownContent}>
-                                    <Text style={styles.email}>Email: {item.email}</Text>
 
-                                    {/*
-                                    <View style={styles.senhaContainer}>
-                                        <TextInput
-                                            style={styles.inputSenha}
-                                            secureTextEntry={!mostrarSenha}
-                                            value={item.senha}
-                                            editable={false}
-                                        />
-                                        <Pressable onPress={() => toggleMostrarSenha(item.id)}>
+                                    <View style={styles.flex}>
+                                        <Text style={[styles.email, { flex: 1 }]}>
+                                            Email: {item.email}
+                                        </Text>
+                                        <TouchableOpacity
+                                            onPress={() => handleToggleStatus(item.id, item.ativo)}
+                                        >
                                             <Ionicons
-                                                name={mostrarSenha ? "eye-off" : "eye"}
-                                                size={20}
-                                                color="#000"
+                                                name={item.ativo ? "checkmark-circle" : "close-circle"}
+                                                size={28}
+                                                color={item.ativo ? "#5CB85C" : "#D9534F"}
                                             />
-                                        </Pressable>
+                                        </TouchableOpacity>
                                     </View>
-                                    */}
+
 
                                     <View style={styles.roleContainer}>
                                         <TouchableOpacity
@@ -150,9 +175,17 @@ const ListagemUsuarios = () => {
                                             <Ionicons
                                                 name={item.role === "user" ? "checkbox" : "square-outline"}
                                                 size={25}
-                                                color={item.role === "user" ? "#B1AEAF" : "#ccc"}
+                                                color={
+                                                    !item.ativo
+                                                        ? "#000" // Desativado
+                                                        : item.role === "user"
+                                                            ? "#B1AEAF" // Ativo e selecionado
+                                                            : "#ccc"   // Não selecionado
+                                                }
                                             />
-                                            <Text style={styles.checkboxLabel}>Funcionário</Text>
+                                            <Text style={[styles.checkboxLabel, !item.ativo && { color: "#000" }]}>
+                                                Funcionário
+                                            </Text>
                                         </TouchableOpacity>
 
                                         <TouchableOpacity
@@ -165,12 +198,20 @@ const ListagemUsuarios = () => {
                                             <Ionicons
                                                 name={item.role === "admin" ? "checkbox" : "square-outline"}
                                                 size={25}
-                                                color={item.role === "admin" ? "#B1AEAF" : "#ccc"}
+                                                color={
+                                                    !item.ativo
+                                                        ? "#000" // Desativado
+                                                        : item.role === "admin"
+                                                            ? "#B1AEAF" // Ativo e selecionado
+                                                            : "#ccc"   // Não selecionado
+                                                }
                                             />
-                                            <Text style={styles.checkboxLabel}>Administrador</Text>
+                                            <Text style={[styles.checkboxLabel, !item.ativo && { color: "#000" }]}>
+                                                Administrador
+                                            </Text>
                                         </TouchableOpacity>
-
                                     </View>
+
 
                                     <View style={styles.buttonContainer}>
                                         <TouchableOpacity style={[styles.button, styles.botaoExcluir]}>
@@ -194,6 +235,11 @@ const ListagemUsuarios = () => {
 
 
 const styles = StyleSheet.create({
+    flex: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center", // garante que fiquem alinhados na vertical
+    },
     container: {
         flex: 1,
         paddingTop: 80,
@@ -220,6 +266,14 @@ const styles = StyleSheet.create({
     },
     usuario: {
         backgroundColor: "#fff",
+        width: 320,
+        marginBottom: 20,
+        borderRadius: 8,
+        padding: 16,
+        fontFamily: "Montserrat_500Medium",
+    },
+    usuarioDesativado: {
+        backgroundColor: "#ccc",
         width: 320,
         marginBottom: 20,
         borderRadius: 8,

@@ -4,7 +4,6 @@ import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerItemL
 import { View } from 'react-native';
 import Login from '../pages/login';
 import Home from '../pages/home';
-import Profile from '../pages/profile';
 import Chat from '../pages/chat';
 import CadastroAgentes from '../pages/cadastroAgente';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -55,7 +54,6 @@ const DrawerNavigator = ({ navigation }: any) => {
       }}
     >
       <Drawer.Screen name="Home" component={Home} />
-      <Drawer.Screen name="Profile" component={Profile} />
       <Drawer.Screen name="Chat" component={Chat} />
       {userRole === 'admin' && ( 
         <>
