@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { StyleSheet, Text, View, FlatList, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import { API_URL } from '@env'; // <- aqui a mágica acontece
+import { API_URL } from '@env';
+import Feather from "react-native-vector-icons/Feather";
 
 const ListagemAgentes = () => {
     const [agentes, setAgentes] = useState<any[]>([]);
@@ -18,7 +19,6 @@ const ListagemAgentes = () => {
             }
 
             const response = await fetch(`${API_URL}/agentes`, {
-
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -54,13 +54,25 @@ const ListagemAgentes = () => {
                 data={agentes}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
-                    <TouchableOpacity
-                        style={styles.agente}
-                        onPress={() => navigation.navigate("Tela de permissões", { agenteId: item.id })}
-                    >
-                        <Text style={{ fontWeight: "bold" }}>{item.setor}</Text>
-                        <Text>{item.assunto}</Text>
-                    </TouchableOpacity>
+                    <View style={styles.agente}>
+                        <TouchableOpacity
+                            style={styles.infoContainer}
+                            onPress={() => navigation.navigate("Tela de permissões", { agenteId: item.id })}
+                        >
+                            <Text style={{ fontWeight: "bold" }}>{item.setor}</Text>
+                            <Text>{item.assunto}</Text>
+                        </TouchableOpacity>
+
+                        <View style={styles.iconContainer}>
+                            <TouchableOpacity onPress={() => console.log("Editar", item.id)}>
+                                <Feather name="edit" size={20} color="#333" style={styles.icon} />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={() => console.log("Deletar", item.id)}>
+                                <Feather name="trash-2" size={20} color="#cc0000" style={styles.icon} />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
                 )}
             />
         </View>
@@ -97,11 +109,25 @@ const styles = StyleSheet.create({
     agente: {
         backgroundColor: "#fff",
         width: 300,
-        height: 70,
+        minHeight: 70,
         marginBottom: 30,
-        padding: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
         borderRadius: 8,
-        marginTop: 0,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    infoContainer: {
+        flex: 1,
+        marginRight: 10,
+    },
+    iconContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    icon: {
+        marginLeft: 12,
     },
 });
 
