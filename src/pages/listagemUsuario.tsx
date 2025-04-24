@@ -8,6 +8,7 @@ import { RefreshControl } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { API_URL } from '@env'; // <- aqui a mágica acontece
+import { Alert } from "react-native";
 
 const ListagemUsuarios = () => {
     const [usuarios, setUsuarios] = useState<any[]>([]);
@@ -53,10 +54,28 @@ const ListagemUsuarios = () => {
             const result = await response.json();
 
             if (result.success) {
-                alert(result.message);
+                Alert.alert(
+                    statusAtual ? "Usuário Inativo" : "Usuário Reativado", // Cabeçalho do alerta
+                    result.message, 
+                    [
+                        {
+                            text: "OK",
+                            style: "default",
+                        },
+                    ]
+                );
                 handleBuscarUsuarios(); // atualiza a lista
             } else {
-                alert("Erro: " + result.message);
+                Alert.alert(
+                    "Erro",
+                    result.message,
+                    [
+                        {
+                            text: "OK",
+                            style: "cancel",
+                        },
+                    ]
+                );
             }
         } catch (error) {
             console.error("Erro ao atualizar status do usuário:", error);
@@ -153,7 +172,22 @@ const ListagemUsuarios = () => {
                                             Email: {item.email}
                                         </Text>
                                         <TouchableOpacity
-                                            onPress={() => handleToggleStatus(item.id, item.ativo)}
+                                            onPress={() => {
+                                                Alert.alert(
+                                                    item.ativo ? "Inativar usuário" : "Ativar usuário",
+                                                    `Tem certeza que deseja ${item.ativo ? "inativar" : "ativar"} ${item.nome}?`,
+                                                    [
+                                                        {
+                                                            text: "Cancelar",
+                                                            style: "cancel",
+                                                        },
+                                                        {
+                                                            text: "Confirmar",
+                                                            onPress: () => handleToggleStatus(item.id, item.ativo),
+                                                        },
+                                                    ]
+                                                );
+                                            }}
                                         >
                                             <Ionicons
                                                 name={item.ativo ? "checkmark-circle" : "close-circle"}
@@ -251,7 +285,7 @@ const styles = StyleSheet.create({
         marginBottom: 64,
     },
     titulo: {
-        fontSize: 28,
+        fontSize: 26,
         fontWeight: "500",
         color: "#fff",
         fontFamily: "Montserrat_500Medium",
