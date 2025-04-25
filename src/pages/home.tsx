@@ -2,12 +2,16 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 const Home = () => {
+
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>Bem-vindo à Home!</Text>
+            <Text style={styles.text}>
+               Bem-vindo!
+            </Text>
         </View>
     );
-}
+};
+
 export default Home;
 
 const styles = StyleSheet.create({
@@ -20,6 +24,6 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: "#Fff"
+        color: "#fff",
     }
 });
