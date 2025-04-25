@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput, Pressable } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput, Pressable, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { useFonts, Montserrat_400Regular, Montserrat_500Medium } from '@expo-google-fonts/montserrat';
@@ -7,6 +7,7 @@ import AppLoading from 'expo-app-loading';
 import { RefreshControl } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
+import RNPickerSelect from 'react-native-picker-select';
 import { API_URL } from '@env'; // <- aqui a mágica acontece
 
 const ListagemUsuarios = () => {
@@ -14,6 +15,15 @@ const ListagemUsuarios = () => {
     const [dropdownAberto, setDropdownAberto] = useState<number | null>(null);
     const [mostrarSenhaId, setMostrarSenhaId] = useState<number | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isEditing, setIsEditing] = useState(false)
+    const [editandoUsuarioId, setEditandoUsuarioId] = useState<number | null>(null);
+    const [editNome, setEditNome] = useState('');
+    const [editEmail, setEditEmail] = useState('');
+    const [editSenha, setEditSenha] = useState('');
+    const [editCargo, setEditCargo] = useState('');
+    const [senhaValida, setSenhaValida] = useState(true);
+    const [emailValido, setEmailValido] = useState(true);
+
 
     let [fontsLoaded] = useFonts({
         Montserrat_400Regular,
@@ -35,7 +45,7 @@ const ListagemUsuarios = () => {
         useCallback(() => {
             handleBuscarUsuarios();
         }, [])
-    );    
+    );
 
     const handleBuscarUsuarios = async () => {
         try {
@@ -83,6 +93,112 @@ const ListagemUsuarios = () => {
         setUsuarios(updatedUsuarios);
     };
 
+    const validarEmail = (email: string) => {
+        const contemArroba = email.includes('@');
+        setEmailValido(contemArroba);
+        setEditEmail(email);
+    };
+
+    const validarSenha = (senha: string) => {
+        const regex = /^(?=.*[!@#$%^&*])(?=.*\d)[A-Za-z\d!@#$%^&*]{8,}$/;
+        setSenhaValida(regex.test(senha));
+        setEditSenha(senha);
+    };
+
+    const handleEdicao = (usuario: any) => {
+        setEditandoUsuarioId(usuario.id);
+        setEditNome(usuario.nome);
+        setEditEmail(usuario.email);
+        setEditSenha('');
+        setEditCargo(usuario.role)
+    };
+
+    const cancelarEdicao = () => {
+        setEditandoUsuarioId(null);
+        setEditNome('');
+        setEditEmail('');
+        setEditSenha('');
+        setEditCargo('')
+    };
+
+    const salvarEdicao = async (id: number) => {
+        if (!emailValido) {
+            Alert.alert("E-mail inválido", "Por favor, insira um e-mail válido que utilize '@'.");
+            return;
+        }
+
+        if (!senhaValida) {
+            Alert.alert("Senha Inválida", "A senha deve ter pelo menos 8 caracteres, incluir um número e um caractere especial.");
+            return;
+        }
+
+        const token = await AsyncStorage.getItem("userToken");
+        if (!token) {
+            console.error("Token não encontrado.");
+            Alert.alert("Erro", "Erro de autenticação. Faça login novamente.");
+            return;
+        }
+
+        const role = await AsyncStorage.getItem("userRole")
+        if (role == "admin" && editCargo == "user"){
+            Alert.alert("Erro", "Você não pode alterar seu próprio cargo para Usuário.")
+        }
+        // Construir apenas os dados que foram preenchidos
+        const dados: any = {};
+
+        if (editNome && editNome.trim() !== '') {
+            dados.nome = editNome.trim();
+        }
+        if (editEmail && editEmail.trim() !== '') {
+            dados.email = editEmail.trim();
+        }
+        if (editSenha && editSenha.trim() !== '') {
+            dados.senha = editSenha;
+        }
+        if (editCargo && editCargo.trim() !== '') {
+            dados.role = editCargo;
+        }
+
+        if (Object.keys(dados).length === 0) {
+            Alert.alert("Atualização concluída!","Nenhum dado para atualizar.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/atualizar/usuarios/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify(dados),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.log("Erro ao atualizar usuário:", errorData);
+
+                if (errorData.error === "E-mail já cadastrado.") {
+                    Alert.alert("E-mail Inválido!", "Este e-mail já está cadastrado. Por favor, use outro.");
+                } else {
+                    Alert.alert("Erro", `Erro ao atualizar usuário: ${errorData.message || 'Tente novamente.'}`);
+                }
+                return;
+            }
+
+            const responseData = await response.json();
+            Alert.alert("Atualização Concluída!","Usuário atualizado com sucesso!");
+
+            await handleBuscarUsuarios();
+            setEditandoUsuarioId(null);
+
+        } catch (error) {
+            console.log('Erro ao salvar edição', error);
+        }
+    };
+
+
+
     return (
         <View style={styles.container}>
             <View style={styles.cabecalho}>
@@ -119,67 +235,131 @@ const ListagemUsuarios = () => {
 
                             {isAberto && (
                                 <View style={styles.dropdownContent}>
-                                    <Text style={styles.email}>Email: {item.email}</Text>
 
-                                    {/*
+                                    {editandoUsuarioId === item.id ? (
+                                        <View style={{ marginTop: 16 }}>
+                                            <TextInput
+                                                style={styles.input}
+                                                placeholder="Nome"
+                                                value={editNome}
+                                                onChangeText={setEditNome}
+                                            />
+                                            <TextInput
+                                                style={styles.input}
+                                                placeholder="Email"
+                                                value={editEmail}
+                                                onChangeText={validarEmail}
+                                                keyboardType="email-address"
+                                            />
+                                            <TextInput
+                                                style={styles.input}
+                                                placeholder="Senha (Deixe vazio para não alterar)"
+                                                value={editSenha}
+                                                onChangeText={validarSenha}
+                                                secureTextEntry
+                                            />
+
+                                            <RNPickerSelect
+                                                onValueChange={(value) => setEditCargo(value)}
+                                                value={editCargo}
+                                                style={{
+                                                    inputIOS: { color: '#000', paddingVertical: 12 },
+                                                    inputAndroid: { color: '#000' },
+                                                }}
+                                                placeholder={{ label: "Selecione um cargo", value: '' }}
+                                                items={[
+                                                    { label: 'Administrador', value: 'admin' },
+                                                    { label: 'Usuário', value: 'user' },
+                                                ]}
+                                            />
+
+
+                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
+                                                <TouchableOpacity
+                                                    style={[styles.button, styles.botaoCancelar, { flex: 1, marginLeft: 5 }]}
+                                                    onPress={cancelarEdicao}
+                                                >
+                                                    <Text style={styles.buttonText}>Cancelar</Text>
+                                                </TouchableOpacity>
+
+                                                <TouchableOpacity
+                                                    style={[styles.button, styles.botaoAtualizar, { flex: 1, marginRight: 5 }]}
+                                                    onPress={() => salvarEdicao(item.id)}
+                                                >
+                                                    <Text style={styles.buttonText}>Salvar</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    ) : (
+                                        <View>
+                                            <Text style={styles.email}>Email: {item.email}</Text>
+
+                                            {/*
                                     <View style={styles.senhaContainer}>
                                         <TextInput
-                                            style={styles.inputSenha}
-                                            secureTextEntry={!mostrarSenha}
-                                            value={item.senha}
-                                            editable={false}
+                                        style={styles.inputSenha}
+                                        secureTextEntry={!mostrarSenha}
+                                        value={item.senha}
+                                        editable={false}
                                         />
                                         <Pressable onPress={() => toggleMostrarSenha(item.id)}>
-                                            <Ionicons
-                                                name={mostrarSenha ? "eye-off" : "eye"}
-                                                size={20}
-                                                color="#000"
-                                            />
+                                        <Ionicons
+                                        name={mostrarSenha ? "eye-off" : "eye"}
+                                        size={20}
+                                        color="#000"
+                                        />
                                         </Pressable>
-                                    </View>
-                                    */}
+                                        </View>
+                                        */}
 
-                                    <View style={styles.roleContainer}>
-                                        <TouchableOpacity
-                                            style={[
-                                                styles.checkbox,
-                                                item.role === "user" && styles.checkboxSelected,
-                                            ]}
-                                            disabled={true}
-                                        >
-                                            <Ionicons
-                                                name={item.role === "user" ? "checkbox" : "square-outline"}
-                                                size={25}
-                                                color={item.role === "user" ? "#B1AEAF" : "#ccc"}
-                                            />
-                                            <Text style={styles.checkboxLabel}>Funcionário</Text>
-                                        </TouchableOpacity>
+                                            <View style={styles.roleContainer}>
+                                                <TouchableOpacity
+                                                    style={[
+                                                        styles.checkbox,
+                                                        item.role === "user" && styles.checkboxSelected,
+                                                    ]}
+                                                    disabled={true}
+                                                >
+                                                    <Ionicons
+                                                        name={item.role === "user" ? "checkbox" : "square-outline"}
+                                                        size={25}
+                                                        color={item.role === "user" ? "#B1AEAF" : "#ccc"}
+                                                    />
+                                                    <Text style={styles.checkboxLabel}>Funcionário</Text>
+                                                </TouchableOpacity>
 
-                                        <TouchableOpacity
-                                            style={[
-                                                styles.checkbox,
-                                                item.role === "admin" && styles.checkboxSelected,
-                                            ]}
-                                            disabled={true}
-                                        >
-                                            <Ionicons
-                                                name={item.role === "admin" ? "checkbox" : "square-outline"}
-                                                size={25}
-                                                color={item.role === "admin" ? "#B1AEAF" : "#ccc"}
-                                            />
-                                            <Text style={styles.checkboxLabel}>Administrador</Text>
-                                        </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    style={[
+                                                        styles.checkbox,
+                                                        item.role === "admin" && styles.checkboxSelected,
+                                                    ]}
+                                                    disabled={true}
+                                                >
+                                                    <Ionicons
+                                                        name={item.role === "admin" ? "checkbox" : "square-outline"}
+                                                        size={25}
+                                                        color={item.role === "admin" ? "#B1AEAF" : "#ccc"}
+                                                    />
+                                                    <Text style={styles.checkboxLabel}>Administrador</Text>
+                                                </TouchableOpacity>
 
-                                    </View>
+                                            </View>
 
-                                    <View style={styles.buttonContainer}>
-                                        <TouchableOpacity style={[styles.button, styles.botaoExcluir]}>
-                                            <Text style={styles.buttonText}>Excluir</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity style={[styles.button, styles.botaoAtualizar]}>
-                                            <Text style={styles.buttonText}>Atualizar</Text>
-                                        </TouchableOpacity>
-                                    </View>
+                                            <View style={styles.buttonContainer}>
+                                                <TouchableOpacity style={[styles.button, styles.botaoExcluir]}>
+                                                    <Text style={styles.buttonText}>Excluir</Text>
+                                                </TouchableOpacity>
+
+                                                <TouchableOpacity
+                                                    style={[styles.button, styles.botaoAtualizar]}
+                                                    onPress={() => handleEdicao(item)}
+                                                >
+                                                    <Text style={styles.buttonText}>Atualizar</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    )}
+
 
 
                                 </View>
@@ -300,6 +480,19 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontFamily: "Montserrat_500Medium",
     },
+    input: {
+        borderWidth: 1,
+        borderColor: "#ccc",
+        borderRadius: 8,
+        padding: 10,
+        marginTop: 10,
+        backgroundColor: "#fff",
+        fontFamily: "Montserrat_400Regular",
+    },
+    botaoCancelar: {
+        backgroundColor: "#BA4747",
+    }
+
 });
 
 export default ListagemUsuarios;

@@ -47,6 +47,7 @@ const Login = () => {
         Alert.alert('Erro', 'Email ou senha inválidos');
       }
     } catch (error) {
+      console.error(error)
       Alert.alert('Erro', 'Ocorreu um erro. Tente novamente.');
     }
   };  
