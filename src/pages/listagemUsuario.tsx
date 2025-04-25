@@ -280,11 +280,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     cabecalho: {
+        display: 'flex',
         alignItems: "center",
         marginBottom: 64,
     },
     titulo: {
-        fontSize: 26,
+        fontSize: 30,
         fontWeight: "500",
         color: "#fff",
         fontFamily: "Montserrat_500Medium",
