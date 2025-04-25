@@ -36,16 +36,16 @@ const Login = () => {
   
       const data = await response.json();
       
-      if (response.ok && data.message === "Login bem-sucedido") {
+      if (data.message === "Login bem-sucedido") {
         // Salvar o token e o role do usuário
         await AsyncStorage.setItem('userToken', data.token);
         await AsyncStorage.setItem('userRole', data.role);
         navigation.navigate('Home'); 
       } else {
-        Alert.alert('Erro', data.message || 'Email ou senha inválidos');
+        Alert.alert('Email ou senha inválidos');
       }
     } catch (error) {
-      Alert.alert('Erro', 'Ocorreu um erro. Tente novamente.');
+      Alert.alert('Ocorreu um erro. Tente novamente.');
     }
   };  
 

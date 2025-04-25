@@ -36,7 +36,7 @@ const ListagemUsuarios = () => {
         useCallback(() => {
             handleBuscarUsuarios();
         }, [])
-    );    
+    );
 
     const handleToggleStatus = async (id: number, statusAtual: boolean) => {
         try {
@@ -55,8 +55,8 @@ const ListagemUsuarios = () => {
 
             if (result.success) {
                 Alert.alert(
-                    statusAtual ? "Usuário Inativo" : "Usuário Reativado", // Cabeçalho do alerta
-                    result.message, 
+                    statusAtual ? "Usuário Inativo" : "Usuário Reativado", 
+                    result.message,
                     [
                         {
                             text: "OK",
@@ -64,7 +64,7 @@ const ListagemUsuarios = () => {
                         },
                     ]
                 );
-                handleBuscarUsuarios(); // atualiza a lista
+                handleBuscarUsuarios(); 
             } else {
                 Alert.alert(
                     "Erro",
@@ -83,7 +83,6 @@ const ListagemUsuarios = () => {
         }
     };
 
-    
     const handleBuscarUsuarios = async () => {
         try {
             const token = await AsyncStorage.getItem("userToken");
@@ -272,7 +271,7 @@ const styles = StyleSheet.create({
     flex: {
         flexDirection: "row",
         justifyContent: "space-between",
-        alignItems: "center", // garante que fiquem alinhados na vertical
+        alignItems: "center", 
     },
     container: {
         flex: 1,
