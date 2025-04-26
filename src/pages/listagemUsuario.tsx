@@ -9,6 +9,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import RNPickerSelect from 'react-native-picker-select';
 import { API_URL } from '@env'; // <- aqui a mágica acontece
+import { Alert } from "react-native";
 
 const ListagemUsuarios = () => {
     const [usuarios, setUsuarios] = useState<any[]>([]);
@@ -46,6 +47,51 @@ const ListagemUsuarios = () => {
             handleBuscarUsuarios();
         }, [])
     );
+
+    const handleToggleStatus = async (id: number, statusAtual: boolean) => {
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+
+            const response = await fetch(`${API_URL}/usuarios/${id}/status`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify({ ativo: !statusAtual }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                Alert.alert(
+                    statusAtual ? "Usuário Inativo" : "Usuário Reativado", 
+                    result.message,
+                    [
+                        {
+                            text: "OK",
+                            style: "default",
+                        },
+                    ]
+                );
+                handleBuscarUsuarios(); 
+            } else {
+                Alert.alert(
+                    "Erro",
+                    result.message,
+                    [
+                        {
+                            text: "OK",
+                            style: "cancel",
+                        },
+                    ]
+                );
+            }
+        } catch (error) {
+            console.error("Erro ao atualizar status do usuário:", error);
+            alert("Erro ao atualizar status.");
+        }
+    };
 
     const handleBuscarUsuarios = async () => {
         try {
@@ -219,7 +265,7 @@ const ListagemUsuarios = () => {
                     const mostrarSenha = mostrarSenhaId === item.id;
 
                     return (
-                        <View style={styles.usuario}>
+                        <View style={item.ativo ? styles.usuario : styles.usuarioDesativado}>
                             <TouchableOpacity
                                 style={styles.dropdownHeader}
                                 onPress={() => toggleDropdown(item.id)}
@@ -294,23 +340,6 @@ const ListagemUsuarios = () => {
                                         <View>
                                             <Text style={styles.email}>Email: {item.email}</Text>
 
-                                            {/*
-                                    <View style={styles.senhaContainer}>
-                                        <TextInput
-                                        style={styles.inputSenha}
-                                        secureTextEntry={!mostrarSenha}
-                                        value={item.senha}
-                                        editable={false}
-                                        />
-                                        <Pressable onPress={() => toggleMostrarSenha(item.id)}>
-                                        <Ionicons
-                                        name={mostrarSenha ? "eye-off" : "eye"}
-                                        size={20}
-                                        color="#000"
-                                        />
-                                        </Pressable>
-                                        </View>
-                                        */}
 
                                             <View style={styles.roleContainer}>
                                                 <TouchableOpacity
@@ -360,6 +389,94 @@ const ListagemUsuarios = () => {
                                         </View>
                                     )}
 
+                                    <View style={styles.flex}>
+                                        <Text style={[styles.email, { flex: 1 }]}>
+                                            Email: {item.email}
+                                        </Text>
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                Alert.alert(
+                                                    item.ativo ? "Inativar usuário" : "Ativar usuário",
+                                                    `Tem certeza que deseja ${item.ativo ? "inativar" : "ativar"} ${item.nome}?`,
+                                                    [
+                                                        {
+                                                            text: "Cancelar",
+                                                            style: "cancel",
+                                                        },
+                                                        {
+                                                            text: "Confirmar",
+                                                            onPress: () => handleToggleStatus(item.id, item.ativo),
+                                                        },
+                                                    ]
+                                                );
+                                            }}
+                                        >
+                                            <Ionicons
+                                                name={item.ativo ? "checkmark-circle" : "close-circle"}
+                                                size={28}
+                                                color={item.ativo ? "#5CB85C" : "#D9534F"}
+                                            />
+                                        </TouchableOpacity>
+                                    </View>
+
+
+                                    <View style={styles.roleContainer}>
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.checkbox,
+                                                item.role === "user" && styles.checkboxSelected,
+                                            ]}
+                                            disabled={true}
+                                        >
+                                            <Ionicons
+                                                name={item.role === "user" ? "checkbox" : "square-outline"}
+                                                size={25}
+                                                color={
+                                                    !item.ativo
+                                                        ? "#000" // Desativado
+                                                        : item.role === "user"
+                                                            ? "#B1AEAF" // Ativo e selecionado
+                                                            : "#ccc"   // Não selecionado
+                                                }
+                                            />
+                                            <Text style={[styles.checkboxLabel, !item.ativo && { color: "#000" }]}>
+                                                Funcionário
+                                            </Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.checkbox,
+                                                item.role === "admin" && styles.checkboxSelected,
+                                            ]}
+                                            disabled={true}
+                                        >
+                                            <Ionicons
+                                                name={item.role === "admin" ? "checkbox" : "square-outline"}
+                                                size={25}
+                                                color={
+                                                    !item.ativo
+                                                        ? "#000" // Desativado
+                                                        : item.role === "admin"
+                                                            ? "#B1AEAF" // Ativo e selecionado
+                                                            : "#ccc"   // Não selecionado
+                                                }
+                                            />
+                                            <Text style={[styles.checkboxLabel, !item.ativo && { color: "#000" }]}>
+                                                Administrador
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+
+
+                                    <View style={styles.buttonContainer}>
+                                        <TouchableOpacity style={[styles.button, styles.botaoExcluir]}>
+                                            <Text style={styles.buttonText}>Excluir</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[styles.button, styles.botaoAtualizar]}>
+                                            <Text style={styles.buttonText}>Atualizar</Text>
+                                        </TouchableOpacity>
+                                    </View>
 
 
                                 </View>
@@ -374,6 +491,11 @@ const ListagemUsuarios = () => {
 
 
 const styles = StyleSheet.create({
+    flex: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center", 
+    },
     container: {
         flex: 1,
         paddingTop: 80,
@@ -381,11 +503,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     cabecalho: {
+        display: 'flex',
         alignItems: "center",
         marginBottom: 64,
     },
     titulo: {
-        fontSize: 28,
+        fontSize: 30,
         fontWeight: "500",
         color: "#fff",
         fontFamily: "Montserrat_500Medium",
@@ -400,6 +523,14 @@ const styles = StyleSheet.create({
     },
     usuario: {
         backgroundColor: "#fff",
+        width: 320,
+        marginBottom: 20,
+        borderRadius: 8,
+        padding: 16,
+        fontFamily: "Montserrat_500Medium",
+    },
+    usuarioDesativado: {
+        backgroundColor: "#ccc",
         width: 320,
         marginBottom: 20,
         borderRadius: 8,
