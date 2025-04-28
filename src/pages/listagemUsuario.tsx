@@ -417,10 +417,21 @@ const ListagemUsuarios = () => {
                                             </View>
 
                                             <View style={styles.buttonContainer}>
-                                                <TouchableOpacity style={[styles.button, styles.botaoExcluir]}>
-                                                    <Text style={styles.buttonText}>Excluir</Text>
+                                                <TouchableOpacity 
+                                                    style={[styles.button, styles.botaoExcluir]}
+                                                    onPress={() => {
+                                                        Alert.alert(
+                                                            item.ativo ? "Inativar usuário" : "Ativar usuário",
+                                                            `Tem certeza que deseja ${item.ativo ? "inativar" : "ativar"} ${item.nome}?`,
+                                                            [
+                                                                { text: "Cancelar", style: "cancel" },
+                                                                { text: "Confirmar", onPress: () => handleToggleStatus(item.id, item.ativo) }
+                                                            ]
+                                                        );
+                                                    }}
+                                                >
+                                                    <Text style={styles.buttonText}>{item.ativo ? "Inativar" : "Ativar"}</Text>
                                                 </TouchableOpacity>
-
                                                 <TouchableOpacity
                                                     style={[styles.button, styles.botaoAtualizar]}
                                                     onPress={() => handleEdicao(item)}
