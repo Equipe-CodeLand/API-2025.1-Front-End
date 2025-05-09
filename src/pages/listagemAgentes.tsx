@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { API_URL } from '@env';
 import Feather from "react-native-vector-icons/Feather";
+import BarraPesquisaComponent from "../components/barraPesquisa";
 
 const ListagemAgentes = () => {
     const [agentes, setAgentes] = useState<any[]>([]);
@@ -43,6 +44,17 @@ const ListagemAgentes = () => {
             console.error("Erro ao buscar agentes", err);
         }
     };
+
+    const handleFiltro = (regex: RegExp) => {
+        const filtrados = agentes.filter(
+          (agente) => regex.test(agente.setor) || regex.test(agente.assunto) || regex.test(agente.documento)
+        );
+        setAgentesFiltrados(filtrados);
+      };
+    
+      useEffect(() => {
+        handleBuscarAgentes();
+      }, []);
 
     const abrirModalEdicao = (agente: any) => {
         setAgenteEditando(agente);
@@ -141,6 +153,11 @@ const ListagemAgentes = () => {
                     Para restringir o acesso dos usuários aos agentes listados, clique no agente desejado.
                 </Text>
             </View>
+
+            <BarraPesquisaComponent
+                onRegexSubmit={handleFiltro}
+                placeholder="Pesquisar por setor, assunto ou documento..."
+            />
 
             <FlatList
                 data={agentes}
