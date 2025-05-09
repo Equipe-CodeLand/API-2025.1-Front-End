@@ -44,9 +44,8 @@ const BarraPesquisaComponent: React.FC<BarraPesquisaProps> = ({
  
 const styles = StyleSheet.create({
   wrapper: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    width: "100%", // Ocupa toda a largura
+    paddingHorizontal: 20, // Adiciona um pouco de padding nas laterais
     marginBottom: 20,
   },
   searchContainer: {
@@ -56,7 +55,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingHorizontal: 15,
     paddingVertical: 8,
-    width: "80%",
+    width: "100%", // Ocupa toda a largura do wrapper
     elevation: 2,
     shadowColor: "#000",
     shadowOpacity: 0.1,

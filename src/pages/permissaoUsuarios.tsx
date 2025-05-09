@@ -4,63 +4,61 @@ import { useRoute } from "@react-navigation/native";
 import { CheckBox } from "react-native-elements"; 
 import { useEffect, useState } from "react";
 import { API_URL } from '@env'; // <- aqui a mágica acontece
+import BarraPesquisaComponent from "../components/barraPesquisa";
 
 const PermissaoUsuarioPainel = () => {
   const route = useRoute();
   const { agenteId } = route.params as { agenteId: number };
 
-  const [usuarios, setUsuarios] = useState<{ id: number; nome: string; selecionado: boolean }[]>([]);
   const [selecionados, setSelecionados] = useState<{ [key: number]: boolean }>({});
   const [desmarcarTodosAtivo, setDesmarcarTodosAtivo] = useState(false); 
+  const [usuarios, setUsuarios] = useState<{ id: number; nome: string; selecionado: boolean }[]>([]);
+  const [usuariosFiltrados, setUsuariosFiltrados] = useState<typeof usuarios>([]);
+
+  const handleListarUsuariosPorAgente = async () => {
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        console.error("Token não encontrado.");
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/agentes/${agenteId}/usuarios`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro na requisição: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const usuariosComSelecao = data.map((usuario: any) => ({
+        ...usuario,
+        selecionado: usuario.selecionado === 1 || usuario.selecionado === true,
+      }));
+
+      setUsuarios(usuariosComSelecao);
+      setUsuariosFiltrados(usuariosComSelecao); 
+
+      const selecionadosIniciais = usuariosComSelecao.reduce(
+        (acc: { [key: number]: boolean }, usuario: any) => {
+          acc[usuario.id] = usuario.selecionado;
+          return acc;
+        },
+        {}
+      );
+
+      setSelecionados(selecionadosIniciais);
+    } catch (err) {
+      console.error("Erro ao buscar usuários:", err);
+    }
+  };
 
   useEffect(() => {
-    const handleListarUsuariosPorAgente = async () => {
-      try {
-        const token = await AsyncStorage.getItem("userToken");
-        if (!token) {
-          console.error("Token não encontrado.");
-          return;
-        }
-
-        const response = await fetch(
-          `${API_URL}/agentes/${agenteId}/usuarios`,
-
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Erro na requisição: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        const usuariosComSelecao = data.map((usuario: any) => ({
-          ...usuario,
-          selecionado: usuario.selecionado === 1 || usuario.selecionado === true,
-        }));
-
-        setUsuarios(usuariosComSelecao);
-
-        const selecionadosIniciais = usuariosComSelecao.reduce(
-          (acc: { [key: number]: boolean }, usuario: any) => {
-            acc[usuario.id] = usuario.selecionado;
-            return acc;
-          },
-          {}
-        );
-
-        setSelecionados(selecionadosIniciais);
-      } catch (err) {
-        console.error("Erro ao buscar usuários:", err);
-      }
-    };
-
     handleListarUsuariosPorAgente();
   }, [agenteId]);
 
@@ -147,6 +145,20 @@ const PermissaoUsuarioPainel = () => {
         <Text style={styles.comentario}>Selecione o(s) funcionário(s)</Text>
       </View>
 
+      <BarraPesquisaComponent
+        onRegexSubmit={(regex) => {
+          if (!regex || regex.source === "(?:)") {
+            setUsuariosFiltrados(usuarios);
+          } else {
+            const filtrados = usuarios.filter((usuario) =>
+              regex.test(usuario.nome)
+            );
+            setUsuariosFiltrados(filtrados);
+          }
+        }}
+        placeholder="Pesquisar por nome do usuário"
+      />
+
       <TouchableOpacity onPress={desmarcarTodos} style={styles.desmarcarContainer}>
         <CheckBox
           checkedIcon="check-square-o"
@@ -158,7 +170,7 @@ const PermissaoUsuarioPainel = () => {
       </TouchableOpacity>
 
       <FlatList
-        data={usuarios}
+        data={usuariosFiltrados}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.usuarioContainer}>
@@ -171,6 +183,10 @@ const PermissaoUsuarioPainel = () => {
             <Text style={styles.nomeUsuario}>{item.nome}</Text>
           </View>
         )}
+        contentContainerStyle={{ 
+          paddingTop: 0, 
+          flexGrow: 0      
+        }}
       />
     </View>
   );
