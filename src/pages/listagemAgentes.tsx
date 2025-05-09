@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, Alert, Modal, TextInput, Button } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { API_URL } from '@env';
 import Feather from "react-native-vector-icons/Feather";
 import BarraPesquisaComponent from "../components/barraPesquisa";
@@ -45,16 +45,11 @@ const ListagemAgentes = () => {
         }
     };
 
-    const handleFiltro = (regex: RegExp) => {
-        const filtrados = agentes.filter(
-          (agente) => regex.test(agente.setor) || regex.test(agente.assunto) || regex.test(agente.documento)
-        );
-        setAgentesFiltrados(filtrados);
-      };
-    
-      useEffect(() => {
-        handleBuscarAgentes();
-      }, []);
+    useFocusEffect(
+        React.useCallback(() => {
+            handleBuscarAgentes(); // Busca os agentes toda vez que a tela ganha foco
+        }, [])
+    );
 
     const abrirModalEdicao = (agente: any) => {
         setAgenteEditando(agente);
@@ -141,10 +136,6 @@ const ListagemAgentes = () => {
         }
     };
 
-    useEffect(() => {
-        handleBuscarAgentes();
-    }, []);
-
     return (
         <View style={styles.container}>
             <View style={styles.cabecalho}>
@@ -155,8 +146,17 @@ const ListagemAgentes = () => {
             </View>
 
             <BarraPesquisaComponent
-                onRegexSubmit={handleFiltro}
-                placeholder="Pesquisar por setor, assunto ou documento..."
+                onRegexSubmit={(regex) => {
+                    if (!regex || regex.source === "(?:)") { // Verifica se o regex está vazio
+                        handleBuscarAgentes(); // Recarrega todos os agentes
+                    } else {
+                        const filtrados = agentes.filter(
+                            (agente) => regex.test(agente.setor) || regex.test(agente.assunto) || regex.test(agente.documento)
+                        );
+                        setAgentes(filtrados);
+                    }
+                }}
+                placeholder="Pesquisar por nome do setor ou assunto"
             />
 
             <FlatList
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     },
     cabecalho: {
         alignItems: "center",
-        marginBottom: 64,
+        marginBottom: 14,
     },
     titulo: {
         fontSize: 30,
