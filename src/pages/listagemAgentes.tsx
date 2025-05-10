@@ -8,6 +8,7 @@ import BarraPesquisaComponent from "../components/barraPesquisa";
 
 const ListagemAgentes = () => {
     const [agentes, setAgentes] = useState<any[]>([]);
+    const [agentesFiltrados, setAgentesFiltrados] = useState<any[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [agenteEditando, setAgenteEditando] = useState<any>(null);
     const [formData, setFormData] = useState({
@@ -40,6 +41,7 @@ const ListagemAgentes = () => {
 
             const data = await response.json();
             setAgentes(data);
+            setAgentesFiltrados(data);
         } catch (err) {
             console.error("Erro ao buscar agentes", err);
         }
@@ -50,6 +52,19 @@ const ListagemAgentes = () => {
             handleBuscarAgentes(); // Busca os agentes toda vez que a tela ganha foco
         }, [])
     );
+
+    const handleFiltrarAgentes = (regex: RegExp | null) => {
+        if (!regex) {
+            setAgentesFiltrados(agentes); 
+        } else {
+            const filtrados = agentes.filter(
+                (agente) =>
+                    regex.test(agente.setor) ||
+                    regex.test(agente.assunto)
+            );
+            setAgentesFiltrados(filtrados);
+        }
+    };
 
     const abrirModalEdicao = (agente: any) => {
         setAgenteEditando(agente);
@@ -146,21 +161,12 @@ const ListagemAgentes = () => {
             </View>
 
             <BarraPesquisaComponent
-                onRegexSubmit={(regex) => {
-                    if (!regex || regex.source === "(?:)") { // Verifica se o regex está vazio
-                        handleBuscarAgentes(); // Recarrega todos os agentes
-                    } else {
-                        const filtrados = agentes.filter(
-                            (agente) => regex.test(agente.setor) || regex.test(agente.assunto) || regex.test(agente.documento)
-                        );
-                        setAgentes(filtrados);
-                    }
-                }}
-                placeholder="Pesquisar por nome do setor ou assunto"
+                onRegexSubmit={handleFiltrarAgentes}
+                placeholder="Pesquisar por setor ou assunto"
             />
 
             <FlatList
-                data={agentes}
+                data={agentesFiltrados}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
                     <View style={styles.agente}>

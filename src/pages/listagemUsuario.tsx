@@ -258,20 +258,22 @@ const ListagemUsuarios = () => {
 
             <View style={styles.searchWrapper}>
                 <BarraPesquisaComponent
-                onRegexSubmit={(regex) => {
-                    if (!regex || regex.source === "(?:)") {
-                    setUsuariosFiltrados(usuarios);
-                    } else {
-                    const filtrados = usuarios.filter((usuario) =>
-                        regex.test(usuario.nome) ||
-                        regex.test(usuario.email) ||
-                        regex.test(usuario.role) ||
-                        regex.test(usuario.ativo)
-                    );
-                    setUsuariosFiltrados(filtrados);
-                    }
-                }}
-                placeholder="Pesquisar por nome do usuário"
+                    onRegexSubmit={(regex) => {
+                        if (!regex || regex.source === "(?:)") {
+                            // Regex inválida ou vazia, mostrar todos os usuários
+                            setUsuariosFiltrados(usuarios);
+                        } else {
+                            // Filtra por nome, email, cargo ou status
+                            const filtrados = usuarios.filter((usuario) =>
+                                regex.test(usuario.nome) ||
+                                regex.test(usuario.email) ||
+                                regex.test(usuario.role) ||
+                                regex.test(usuario.ativo ? "Ativo" : "Inativo")
+                            );
+                            setUsuariosFiltrados(filtrados);
+                        }
+                    }}
+                    placeholder="Pesquisar por nome, email, cargo ou status"
                 />
             </View>
 

@@ -9,22 +9,29 @@ type BarraPesquisaProps = {
 };
  
 const BarraPesquisaComponent: React.FC<BarraPesquisaProps> = ({
-  onRegexSubmit,
-  placeholder = "Pesquisar...",
-  inputProps,
-}) => {
-  const [pesquisa, setPesquisa] = useState<string>("");
- 
+    onRegexSubmit,
+    placeholder = "Pesquisar...",
+    inputProps,
+  }) => {
+    const [pesquisa, setPesquisa] = useState<string>("");
+
   const handleChange = (text: string) => {
-    setPesquisa(text);
-    try {
-      const regex = new RegExp(text, "i");
-      onRegexSubmit?.(regex);
-    } catch (e) {
-      console.warn("Regex inválida:", e);
+    const pesquisaFormatada = text.trim(); // Remover espaços extras
+    setPesquisa(pesquisaFormatada);
+
+    if (pesquisaFormatada === "") {
+      onRegexSubmit?.(/.*/); // Se estiver vazio, retorna todos
+    } else {
+      try {
+        // Aqui está o ajuste: regex simples, sem complicação
+        const regex = new RegExp(`^${pesquisaFormatada}`, "i");
+        onRegexSubmit?.(regex);
+      } catch (e) {
+        console.warn("Regex inválida:", e);
+      }
     }
   };
- 
+
   return (
     <View style={styles.wrapper}>
       <View style={styles.searchContainer}>
