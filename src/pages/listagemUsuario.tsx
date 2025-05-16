@@ -9,6 +9,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import RNPickerSelect from 'react-native-picker-select';
 import { API_URL } from '@env'; // <- aqui a mágica acontece
+import BarraPesquisaComponent from "../components/barraPesquisa";
 
 const ListagemUsuarios = () => {
     const [usuarios, setUsuarios] = useState<any[]>([]);
@@ -23,6 +24,7 @@ const ListagemUsuarios = () => {
     const [editCargo, setEditCargo] = useState('');
     const [senhaValida, setSenhaValida] = useState(true);
     const [emailValido, setEmailValido] = useState(true);
+    const [usuariosFiltrados, setUsuariosFiltrados] = useState<typeof usuarios>([]);
 
 
     let [fontsLoaded] = useFonts({
@@ -111,6 +113,7 @@ const ListagemUsuarios = () => {
 
             const data = await response.json();
             setUsuarios(data);
+            setUsuariosFiltrados(data);
         } catch (err) {
             console.error("Erro ao buscar usuários", err);
         }
@@ -253,8 +256,29 @@ const ListagemUsuarios = () => {
                 </Text>
             </View>
 
+            <View style={styles.searchWrapper}>
+                <BarraPesquisaComponent
+                    onRegexSubmit={(regex) => {
+                        if (!regex || regex.source === "(?:)") {
+                            // Regex inválida ou vazia, mostrar todos os usuários
+                            setUsuariosFiltrados(usuarios);
+                        } else {
+                            // Filtra por nome, email, cargo ou status
+                            const filtrados = usuarios.filter((usuario) =>
+                                regex.test(usuario.nome) ||
+                                regex.test(usuario.email) ||
+                                regex.test(usuario.role) ||
+                                regex.test(usuario.ativo ? "Ativo" : "Inativo")
+                            );
+                            setUsuariosFiltrados(filtrados);
+                        }
+                    }}
+                    placeholder="Pesquisar por nome, email, cargo ou status"
+                />
+            </View>
+
             <FlatList
-                data={usuarios}
+                data={usuariosFiltrados}
                 keyExtractor={(item) => item.id.toString()}
                 refreshControl={
                     <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
@@ -447,6 +471,11 @@ const ListagemUsuarios = () => {
                         </View>
                     );
                 }}
+                contentContainerStyle={{
+                    justifyContent: "center",
+                    alignItems: "center",
+                    paddingBottom: 20,
+                }}
             />
         </View>
     );
@@ -466,6 +495,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "flex-start",
     },
+    headerContainer: {
+        width: "100%",
+        paddingTop: 80,
+        paddingHorizontal: 20,
+        marginBottom: 20,
+    },
     cabecalho: {
         display: 'flex',
         alignItems: "center",
@@ -483,6 +518,15 @@ const styles = StyleSheet.create({
         textAlign: "center",
         width: 340,
         fontFamily: "Montserrat_500Medium",
+    },
+    searchWrapper: {
+        width: "100%",
+        paddingVertical: 10,
+        backgroundColor: "#1A1A1A",
+        alignItems: "center",
+    },
+    listContent: {
+        paddingBottom: 20,
     },
     usuario: {
         backgroundColor: "#fff",

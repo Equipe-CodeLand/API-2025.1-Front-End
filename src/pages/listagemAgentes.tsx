@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, Alert, Modal, TextInput, Button } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { API_URL } from '@env';
 import Feather from "react-native-vector-icons/Feather";
+import BarraPesquisaComponent from "../components/barraPesquisa";
 
 const ListagemAgentes = () => {
     const [agentes, setAgentes] = useState<any[]>([]);
+    const [agentesFiltrados, setAgentesFiltrados] = useState<any[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [agenteEditando, setAgenteEditando] = useState<any>(null);
     const [formData, setFormData] = useState({
@@ -39,8 +41,28 @@ const ListagemAgentes = () => {
 
             const data = await response.json();
             setAgentes(data);
+            setAgentesFiltrados(data);
         } catch (err) {
             console.error("Erro ao buscar agentes", err);
+        }
+    };
+
+    useFocusEffect(
+        React.useCallback(() => {
+            handleBuscarAgentes(); // Busca os agentes toda vez que a tela ganha foco
+        }, [])
+    );
+
+    const handleFiltrarAgentes = (regex: RegExp | null) => {
+        if (!regex) {
+            setAgentesFiltrados(agentes); 
+        } else {
+            const filtrados = agentes.filter(
+                (agente) =>
+                    regex.test(agente.setor) ||
+                    regex.test(agente.assunto)
+            );
+            setAgentesFiltrados(filtrados);
         }
     };
 
@@ -129,10 +151,6 @@ const ListagemAgentes = () => {
         }
     };
 
-    useEffect(() => {
-        handleBuscarAgentes();
-    }, []);
-
     return (
         <View style={styles.container}>
             <View style={styles.cabecalho}>
@@ -142,8 +160,13 @@ const ListagemAgentes = () => {
                 </Text>
             </View>
 
+            <BarraPesquisaComponent
+                onRegexSubmit={handleFiltrarAgentes}
+                placeholder="Pesquisar por setor ou assunto"
+            />
+
             <FlatList
-                data={agentes}
+                data={agentesFiltrados}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
                     <View style={styles.agente}>
@@ -234,7 +257,7 @@ const styles = StyleSheet.create({
     },
     cabecalho: {
         alignItems: "center",
-        marginBottom: 64,
+        marginBottom: 14,
     },
     titulo: {
         fontSize: 30,
