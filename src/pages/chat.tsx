@@ -7,10 +7,14 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
-  ActivityIndicator
+  ActivityIndicator,
+  RefreshControl,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { API_URL } from '@env';
-import jwtDecode from "jwt-decode";
+import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
 interface Agente {
@@ -30,7 +34,8 @@ const Chat = () => {
   const [agenteSelecionado, setAgenteSelecionado] = useState<Agente | null>(null);
   const [chatId, setChatId] = useState<string | null>(null);
   const [isLoadingAgentes, setIsLoadingAgentes] = useState(true);
-  const [usuario_id, setUsuario_id] = useState(false)
+  const [usuario_id, setUsuario_id] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([
@@ -48,10 +53,7 @@ const Chat = () => {
         return;
       }
 
-      const tokenData: any = jwtDecode(token);
-      setUsuario_id(tokenData.id)
-
-      const response = await fetch(`${API_URL}/usuarios/buscar/agentes/${usuario_id}`, {
+      const response = await fetch(`${API_URL}/usuarios/buscar/agentes`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -80,13 +82,26 @@ const Chat = () => {
     setInput('');
     setLoading(true);
 
+    const token = await AsyncStorage.getItem("userToken");
+
+    if (!token) {
+      console.error("Token não encontrado.");
+      return;
+    }
+
     try {
       const response = await fetch(`${API_URL}/mensagens`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify({ question: input, chat_id: chatId, usuario_id: usuario_id, agente_id: agenteSelecionado.id })
+        body: JSON.stringify({
+          question: input,
+          chat_id: chatId,
+          usuario_id: usuario_id,
+          agente_id: agenteSelecionado?.id
+        })
       });
 
       const data = await response.json();
@@ -111,6 +126,16 @@ const Chat = () => {
     }
   };
 
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await handleBuscarAgentes();
+    } catch (error) {
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   useEffect(() => {
     handleBuscarAgentes();
   }, []);
@@ -125,6 +150,9 @@ const Chat = () => {
           <FlatList
             data={agentes}
             keyExtractor={(item) => item.id.toString()}
+            refreshControl={
+              <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+            }
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.agenteCard}
@@ -146,45 +174,51 @@ const Chat = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={[
-            styles.messageContainer,
-            item.sender === 'user' ? styles.userMessage : styles.botMessage
-          ]}>
-            <Text style={styles.messageText}>{item.text}</Text>
-          </View>
-        )}
-        contentContainerStyle={styles.messagesList}
-        inverted={false}
-      />
-
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Digite sua mensagem..."
-          placeholderTextColor="#888"
-          value={input}
-          onChangeText={setInput}
-          editable={!loading}
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={80} // ajuste conforme necessário
+      >
+        <FlatList
+          data={messages}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View style={[
+              styles.messageContainer,
+              item.sender === 'user' ? styles.userMessage : styles.botMessage
+            ]}>
+              <Text style={styles.messageText}>{item.text}</Text>
+            </View>
+          )}
+          contentContainerStyle={styles.messagesList}
+          inverted={false}
         />
 
-        <TouchableOpacity
-          style={styles.sendButton}
-          onPress={sendMessage}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.sendButtonText}>Enviar</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </View>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Digite sua mensagem..."
+            placeholderTextColor="#888"
+            value={input}
+            onChangeText={setInput}
+            editable={!loading}
+          />
+
+          <TouchableOpacity
+            style={styles.sendButton}
+            onPress={sendMessage}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.sendButtonText}>Enviar</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
