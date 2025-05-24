@@ -4,7 +4,7 @@ import { useFonts, MontserratAlternates_400Regular, MontserratAlternates_800Extr
 import AppLoading from 'expo-app-loading';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { API_URL } from '@env'; 
+import { API_URL } from '@env';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -23,7 +23,7 @@ const Login = () => {
   const handleLogin = async () => {
     try {
 
-      const response = await fetch(`${API_URL}/login`, {
+      const response = await fetch(`http://192.168.1.24:3000/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,14 +33,14 @@ const Login = () => {
           senha: senha,
         }),
       });
-  
+
       const data = await response.json();
-      
+
       if (data.message === "Login bem-sucedido") {
         // Salvar o token e o role do usuário
         await AsyncStorage.setItem('userToken', data.token);
         await AsyncStorage.setItem('userRole', data.role);
-        navigation.navigate('Home'); 
+        navigation.navigate('Home');
       } else {
         Alert.alert('Email ou senha inválidos');
       }
@@ -48,7 +48,7 @@ const Login = () => {
       console.error(error)
       Alert.alert('Erro', 'Ocorreu um erro. Tente novamente.');
     }
-  };  
+  };
 
   return (
     <View style={styles.container}>
@@ -56,18 +56,18 @@ const Login = () => {
         <Text style={styles.bemVindo}>Bem vindo ao</Text>
         <Text style={styles.titulo}>Pro4Tech</Text>
       </View>
-      <TextInput 
+      <TextInput
         style={styles.input}
         placeholder="Email"
         value={email}
-        onChangeText={setEmail} 
+        onChangeText={setEmail}
         placeholderTextColor="#939393"
       />
-      <TextInput 
+      <TextInput
         style={styles.input}
         placeholder="Senha"
         value={senha}
-        onChangeText={setSenha} 
+        onChangeText={setSenha}
         placeholderTextColor="#939393"
         secureTextEntry
       />
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
   titulo: {
     fontSize: 40,
-    fontFamily: "MontserratAlternates_800ExtraBold", 
+    fontFamily: "MontserratAlternates_800ExtraBold",
     textAlign: 'center',
     color: '#fff',
   },
@@ -117,13 +117,13 @@ const styles = StyleSheet.create({
   },
   esqueceuSenha: {
     alignSelf: 'flex-start',
-    marginLeft: 91, 
+    marginLeft: 91,
     color: '#FFF4F4',
   },
   esqueceuSenhaTexto: {
     fontSize: 13,
     color: '#FFF4F4',
-    fontFamily: "Montserrat_400Regular", 
+    fontFamily: "Montserrat_400Regular",
     marginBottom: 20,
   },
   btn: {
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
     textAlign: 'center',
-    fontFamily: "Montserrat_500Medium", 
+    fontFamily: "Montserrat_500Medium",
     paddingTop: 6,
   }
 });

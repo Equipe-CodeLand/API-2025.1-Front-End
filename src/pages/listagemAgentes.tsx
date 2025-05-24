@@ -27,7 +27,7 @@ const ListagemAgentes = () => {
                 return;
             }
 
-            const response = await fetch(`${API_URL}/agentes`, {
+            const response = await fetch(`http://192.168.1.24:3000/agentes`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -55,7 +55,7 @@ const ListagemAgentes = () => {
 
     const handleFiltrarAgentes = (regex: RegExp | null) => {
         if (!regex) {
-            setAgentesFiltrados(agentes); 
+            setAgentesFiltrados(agentes);
         } else {
             const filtrados = agentes.filter(
                 (agente) =>
@@ -79,13 +79,13 @@ const ListagemAgentes = () => {
     const handleAtualizarAgente = async () => {
         try {
             const token = await AsyncStorage.getItem("userToken");
-            
+
             if (!token) {
                 console.error("Token não encontrado.");
                 return;
             }
 
-            const response = await fetch(`${API_URL}/agentes/${agenteEditando.id}`, {
+            const response = await fetch(`http://192.168.1.24:3000/agentes/${agenteEditando.id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -124,10 +124,10 @@ const ListagemAgentes = () => {
                         text: "Cancelar",
                         style: "cancel"
                     },
-                    { 
-                        text: "Excluir", 
+                    {
+                        text: "Excluir",
                         onPress: async () => {
-                            const response = await fetch(`${API_URL}/agentes/${agenteId}`, {
+                            const response = await fetch(`http://192.168.1.24:3000/agentes/${agenteId}`, {
                                 method: "DELETE",
                                 headers: {
                                     "Content-Type": "application/json",
@@ -203,37 +203,37 @@ const ListagemAgentes = () => {
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>Editar Agente</Text>
-                        
+
                         <Text style={styles.label}>Setor:</Text>
                         <TextInput
                             style={styles.input}
                             value={formData.setor}
-                            onChangeText={(text) => setFormData({...formData, setor: text})}
+                            onChangeText={(text) => setFormData({ ...formData, setor: text })}
                         />
 
                         <Text style={styles.label}>Assunto:</Text>
                         <TextInput
                             style={styles.input}
                             value={formData.assunto}
-                            onChangeText={(text) => setFormData({...formData, assunto: text})}
+                            onChangeText={(text) => setFormData({ ...formData, assunto: text })}
                         />
 
                         <Text style={styles.label}>Documento:</Text>
                         <TextInput
                             style={styles.input}
                             value={formData.documento}
-                            onChangeText={(text) => setFormData({...formData, documento: text})}
+                            onChangeText={(text) => setFormData({ ...formData, documento: text })}
                         />
 
                         <View style={styles.modalButtons}>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 style={[styles.button, styles.cancelButton]}
                                 onPress={() => setModalVisible(false)}
                             >
                                 <Text style={styles.buttonText}>Cancelar</Text>
                             </TouchableOpacity>
-                            
-                            <TouchableOpacity 
+
+                            <TouchableOpacity
                                 style={[styles.button, styles.saveButton]}
                                 onPress={handleAtualizarAgente}
                             >

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   ActivityIndicator
 } from 'react-native';
 import { Message } from '../interface/Message';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Chat = () => {
   const [input, setInput] = useState('');
@@ -17,15 +18,43 @@ const Chat = () => {
   ]);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const registrarAcesso = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
 
-   const sendMessage = async () => {
+        if (!token) {
+          console.error('Token não encontrado');
+          return;
+        }
+
+        await fetch('http://192.168.1.24:3000/acesso/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            agente_nome: 'ChatBot'
+          }),
+        });
+
+      } catch (error) {
+        console.error('Erro ao registrar acesso:', error);
+      }
+    };
+
+    registrarAcesso();
+  }, []);
+
+  const sendMessage = async () => {
     if (input.trim() === '') return;
 
     // Adiciona mensagem do usuário
-    const userMessage: Message = { 
-      id: messages.length + 1, 
-      text: input, 
-      sender: 'user' 
+    const userMessage: Message = {
+      id: messages.length + 1,
+      text: input,
+      sender: 'user'
     };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
@@ -46,22 +75,22 @@ const Chat = () => {
       }
 
       const data = await response.json();
-      
+
       // Adiciona resposta do bot
-      const botResponse: Message = { 
-        id: messages.length + 2, 
-        text: data.response, 
-        sender: 'bot' 
+      const botResponse: Message = {
+        id: messages.length + 2,
+        text: data.response,
+        sender: 'bot'
       };
       setMessages(prev => [...prev, botResponse]);
-      
+
     } catch (error) {
       console.error('Erro ao se comunicar com o backend:', error);
       // Adiciona mensagem de erro
-      const errorMessage: Message = { 
-        id: messages.length + 2, 
-        text: 'Desculpe, ocorreu um erro ao processar sua mensagem.', 
-        sender: 'bot' 
+      const errorMessage: Message = {
+        id: messages.length + 2,
+        text: 'Desculpe, ocorreu um erro ao processar sua mensagem.',
+        sender: 'bot'
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
@@ -77,7 +106,7 @@ const Chat = () => {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={[
-            styles.messageContainer, 
+            styles.messageContainer,
             item.sender === 'user' ? styles.userMessage : styles.botMessage
           ]}>
             <Text style={styles.messageText}>{item.text}</Text>
@@ -97,9 +126,9 @@ const Chat = () => {
           onChangeText={setInput}
           editable={!loading}
         />
-        
-        <TouchableOpacity 
-          style={styles.sendButton} 
+
+        <TouchableOpacity
+          style={styles.sendButton}
           onPress={sendMessage}
           disabled={loading}
         >
