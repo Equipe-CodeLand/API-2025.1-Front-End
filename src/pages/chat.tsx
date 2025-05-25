@@ -16,6 +16,7 @@ import { API_URL } from '@env';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import Feather from 'react-native-vector-icons/Feather';
+import { useLayoutEffect } from 'react';
 
 interface Agente {
   id: number;
@@ -47,8 +48,11 @@ interface HistoricoChat {
   mensagens: MensagemHistorico[];
 }
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 const Chat = () => {
+  const navigation = useNavigation();
   const [agentes, setAgentes] = useState<Agente[]>([]);
   const [agenteSelecionado, setAgenteSelecionado] = useState<Agente | null>(null);
   const [chatId, setChatId] = useState<string | null>(null);
@@ -61,7 +65,7 @@ const Chat = () => {
 
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([
-    
+
   ]);
   const [loading, setLoading] = useState(false);
 
@@ -104,7 +108,39 @@ const Chat = () => {
       registrarAcesso();
     }
   }, [agenteSelecionado]);
-  
+
+  useLayoutEffect(() => {
+    if (chatId) {
+      navigation.setOptions({
+        headerLeft: () => (
+          <TouchableOpacity
+            style={{
+              marginLeft: 10,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 8,
+            }}
+            onPress={() => {
+              setChatId(null);
+              setAgenteSelecionado(null);
+              setMessages([
+                { id: 0, text: 'Olá! Como posso ajudar?', sender: 'bot' }
+              ]);
+              setInput('');
+            }}
+          >
+            <Ionicons name="chevron-back" size={24} color="white" />
+          </TouchableOpacity>
+        ),
+      });
+    } else {
+      navigation.setOptions({
+        headerLeft: undefined, // Remove o botão se não tiver chat ativo
+      });
+    }
+  }, [chatId, navigation]);
+
+
   const handleBuscarAgentes = async () => {
     try {
       setIsLoadingAgentes(true);
@@ -545,7 +581,7 @@ const Chat = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : "height"}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 100} // ajuste conforme necessário
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
+        {/* <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
           <TouchableOpacity
             style={{
               paddingVertical: 8,
@@ -564,10 +600,11 @@ const Chat = () => {
             }}
           >
             <Text style={{ color: '#fff' }}> Voltar</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> 
 
 
         </View>
+          */}
         <FlatList
           data={messages}
           keyExtractor={(item) => item.id.toString()}

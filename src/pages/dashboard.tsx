@@ -10,7 +10,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Acesso } from '../interface/Acesso';
-import { BarChart } from 'react-native-chart-kit';
+import { BarChart, PieChart } from 'react-native-chart-kit';
 
 const Dashboard = () => {
   const [acessos, setAcessos] = useState<Acesso[]>([]);
@@ -43,12 +43,11 @@ const Dashboard = () => {
     fetchAcessos();
   };
 
-  // filtrar os acessos pelo período
+  // Filtrar os acessos pelo período
   const acessosFiltrados = acessos.filter((acesso) => {
     if (periodo === 'all') return true;
 
     const dataAcesso = new Date(acesso.data_acesso.replace(' ', 'T'));
-
     const dataLimite = new Date();
     dataLimite.setDate(dataLimite.getDate() - Number(periodo));
 
@@ -57,7 +56,6 @@ const Dashboard = () => {
 
   // Agrupar os acessos por agente_nome
   const acessosPorAgente: Record<string, number> = {};
-
   acessosFiltrados.forEach((acesso) => {
     const nomeAgente = acesso.agente_nome || 'Desconhecido';
     acessosPorAgente[nomeAgente] = (acessosPorAgente[nomeAgente] || 0) + 1;
@@ -65,6 +63,11 @@ const Dashboard = () => {
 
   const labels = Object.keys(acessosPorAgente);
   const data = Object.values(acessosPorAgente);
+
+  // Calcular o Top 3 agentes mais ativos
+  const top3Agentes = Object.entries(acessosPorAgente)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
 
   if (loading) {
     return (
@@ -86,7 +89,7 @@ const Dashboard = () => {
         />
       }
     >
-      <Text style={styles.title}>Dashboard de Acessos</Text>
+
 
       {/* Filtro */}
       <View style={styles.filterContainer}>
@@ -119,7 +122,42 @@ const Dashboard = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Gráfico */}
+      <Text style={styles.title}>Distribuição dos Acessos</Text>
+
+      {/* Gráfico de pizza */}
+      <View style={styles.topContainer}>
+        {labels.length > 0 ? (
+          <PieChart
+            data={labels.map((label, index) => ({
+              name: label,
+              population: data[index],
+              color: `hsl(${index * 60}, 70%, 50%)`, // Gera cores variadas automaticamente
+              legendFontColor: '#fff',
+              legendFontSize: 14,
+            }))}
+            width={screenWidth - 20}
+            height={220}
+            chartConfig={{
+              backgroundColor: '#1A1A1A',
+              backgroundGradientFrom: '#1A1A1A',
+              backgroundGradientTo: '#1A1A1A',
+              color: (opacity = 1) => `rgba(0, 182, 163, ${opacity})`,
+              labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+            }}
+            accessor="population"
+            backgroundColor="transparent"
+            paddingLeft="15"
+            center={[10, 0]}
+            absolute
+          />
+        ) : (
+          <Text style={styles.noDataText}>Nenhum dado para este período.</Text>
+        )}
+      </View>
+
+      <Text style={styles.title}>Acessos por agente</Text>
+
+      {/* Gráfico de barras */}
       {labels.length > 0 ? (
         <BarChart
           data={{
@@ -131,7 +169,7 @@ const Dashboard = () => {
             ],
           }}
           width={screenWidth - 20}
-          height={320}
+          height={360}
           yAxisLabel=""
           yAxisSuffix=""
           fromZero
@@ -152,6 +190,23 @@ const Dashboard = () => {
         <Text style={styles.noDataText}>Nenhum dado para este período.</Text>
       )}
 
+      {/* Top 3 Agentes */}
+      <View style={styles.topContainer}>
+        <Text style={styles.topTitle}>🏆 Top 3 Agentes Mais Ativos</Text>
+        {top3Agentes.length > 0 ? (
+          top3Agentes.map(([agente, count], index) => (
+            <View key={agente} style={styles.topItem}>
+              <Text style={styles.topPosition}>
+                {index + 1}º - {agente}
+              </Text>
+              <Text style={styles.topCount}>{count} acessos</Text>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.noDataText}>Sem dados neste período.</Text>
+        )}
+      </View>
+
       {/* Info */}
       <View style={styles.info}>
         <Text style={styles.infoText}>
@@ -164,18 +219,19 @@ const Dashboard = () => {
 
 export default Dashboard;
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1A1A1A',
     padding: 10,
+    paddingTop: 40,
   },
   title: {
     color: '#fff',
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
+    marginTop: 20,
     alignSelf: 'center',
   },
   loadingContainer: {
@@ -201,6 +257,34 @@ const styles = StyleSheet.create({
   filterText: {
     color: '#fff',
     fontSize: 14,
+  },
+  topContainer: {
+    backgroundColor: '#2A2A2A',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 60,
+    marginTop: 20,
+  },
+  topTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    alignSelf: 'center',
+  },
+  topItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  topPosition: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  topCount: {
+    color: '#00B6A3',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   info: {
     marginTop: 20,
