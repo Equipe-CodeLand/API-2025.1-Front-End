@@ -4,7 +4,7 @@ import { useFonts, Montserrat_400Regular, Montserrat_500Medium } from '@expo-goo
 import AppLoading from 'expo-app-loading';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as DocumentPicker from 'expo-document-picker';
-import { API_URL } from '@env'; 
+import { API_URL } from '@env';
 
 const CadastroAgentes = () => {
     const [setor, setSetor] = useState("");
@@ -41,7 +41,7 @@ const CadastroAgentes = () => {
 
             const nomeArquivo = fileAsset.name || fileAsset.uri.split('/').pop();
             const extensao = (nomeArquivo ?? "").split('.').pop()?.toLowerCase();
-    
+
             if (extensao !== "csv") {
                 Alert.alert("Erro", "Por favor, selecione um arquivo CSV.");
                 return;
@@ -49,7 +49,7 @@ const CadastroAgentes = () => {
 
             setDocumento(fileAsset.uri);
             setDocumentoNome(nomeArquivo ?? "");
-    
+
             Alert.alert("Arquivo selecionado", nomeArquivo);
 
         } catch (err) {
@@ -77,7 +77,7 @@ const CadastroAgentes = () => {
         formData.append("documento", file);
 
         try {
-            const response = await fetch(`${API_URL}/cadastro/agente`, {
+            const response = await fetch(`http://192.168.1.25:3000/cadastro/agente`, {
                 method: 'POST',
                 body: formData,
             });

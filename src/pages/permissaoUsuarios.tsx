@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, FlatList, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRoute } from "@react-navigation/native";
-import { CheckBox } from "react-native-elements"; 
+import { CheckBox } from "react-native-elements";
 import { useEffect, useState } from "react";
 import { API_URL } from '@env'; // <- aqui a mágica acontece
 import BarraPesquisaComponent from "../components/barraPesquisa";
@@ -11,7 +11,7 @@ const PermissaoUsuarioPainel = () => {
   const { agenteId } = route.params as { agenteId: number };
 
   const [selecionados, setSelecionados] = useState<{ [key: number]: boolean }>({});
-  const [desmarcarTodosAtivo, setDesmarcarTodosAtivo] = useState(false); 
+  const [desmarcarTodosAtivo, setDesmarcarTodosAtivo] = useState(false);
   const [usuarios, setUsuarios] = useState<{ id: number; nome: string; selecionado: boolean }[]>([]);
   const [usuariosFiltrados, setUsuariosFiltrados] = useState<typeof usuarios>([]);
 
@@ -23,7 +23,7 @@ const PermissaoUsuarioPainel = () => {
         return;
       }
 
-      const response = await fetch(`${API_URL}/agentes/${agenteId}/usuarios`, {
+      const response = await fetch(`http://192.168.1.25:3000/agentes/${agenteId}/usuarios`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -42,7 +42,7 @@ const PermissaoUsuarioPainel = () => {
       }));
 
       setUsuarios(usuariosComSelecao);
-      setUsuariosFiltrados(usuariosComSelecao); 
+      setUsuariosFiltrados(usuariosComSelecao);
 
       const selecionadosIniciais = usuariosComSelecao.reduce(
         (acc: { [key: number]: boolean }, usuario: any) => {
@@ -71,8 +71,8 @@ const PermissaoUsuarioPainel = () => {
       }
 
       const url = isChecked
-        ? `${API_URL}/agentes/${usuarioId}/habilitar`
-        : `${API_URL}/agentes/${usuarioId}/desabilitar`;
+        ? `http://192.168.1.25:3000/agentes/${usuarioId}/habilitar`
+        : `http://192.168.1.25:3000/agentes/${usuarioId}/desabilitar`;
 
       const response = await fetch(url, {
         method: "PUT",
@@ -110,7 +110,7 @@ const PermissaoUsuarioPainel = () => {
 
   const desmarcarTodos = async () => {
     try {
-      setDesmarcarTodosAtivo(true); 
+      setDesmarcarTodosAtivo(true);
 
       const token = await AsyncStorage.getItem("userToken");
       if (!token) {
@@ -119,7 +119,7 @@ const PermissaoUsuarioPainel = () => {
       }
 
       for (const usuario of usuarios) {
-        await fetch(`${API_URL}/agentes/${usuario.id}/desabilitar`, {
+        await fetch(`http://192.168.1.25:3000/agentes/${usuario.id}/desabilitar`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -128,7 +128,7 @@ const PermissaoUsuarioPainel = () => {
         });
       }
 
-      setSelecionados({}); 
+      setSelecionados({});
 
       setTimeout(() => {
         setDesmarcarTodosAtivo(false);
@@ -163,7 +163,7 @@ const PermissaoUsuarioPainel = () => {
         <CheckBox
           checkedIcon="check-square-o"
           uncheckedIcon="square-o"
-          checked={desmarcarTodosAtivo} 
+          checked={desmarcarTodosAtivo}
           onPress={desmarcarTodos}
         />
         <Text style={styles.desmarcarTexto}>Desmarcar todos</Text>
@@ -183,9 +183,9 @@ const PermissaoUsuarioPainel = () => {
             <Text style={styles.nomeUsuario}>{item.nome}</Text>
           </View>
         )}
-        contentContainerStyle={{ 
-          paddingTop: 0, 
-          flexGrow: 0      
+        contentContainerStyle={{
+          paddingTop: 0,
+          flexGrow: 0
         }}
       />
     </View>
