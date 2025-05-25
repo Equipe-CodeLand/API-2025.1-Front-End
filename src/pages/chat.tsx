@@ -61,12 +61,13 @@ const Chat = () => {
 
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([
-    { id: 0, text: 'Olá! Como posso ajudar?', sender: 'bot' }
+    
   ]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const registrarAcesso = async () => {
+      if (!agenteSelecionado) return; // Só executa se tiver agente
       try {
         const token = await AsyncStorage.getItem('userToken');
 
@@ -75,24 +76,35 @@ const Chat = () => {
           return;
         }
 
-        await fetch('http://192.168.1.24:3000/acesso/chat', {
+        const response = await fetch('http://192.168.1.29:3000/acesso/chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify({
-            agente_nome: 'ChatBot'
+            agente_id: agenteSelecionado.id,
+            agente_nome: agenteSelecionado.setor || 'ChatBot'
           }),
         });
+
+        if (!response.ok) {
+          const errorData = await response.text();
+          console.error('Erro na resposta do servidor ao registrar acesso:', errorData);
+        } else {
+          console.log('Acesso registrado com sucesso.');
+        }
 
       } catch (error) {
         console.error('Erro ao registrar acesso:', error);
       }
     };
 
-    registrarAcesso();
-  }, []);
+    if (agenteSelecionado) {
+      registrarAcesso();
+    }
+  }, [agenteSelecionado]);
+  
   const handleBuscarAgentes = async () => {
     try {
       setIsLoadingAgentes(true);
@@ -103,7 +115,7 @@ const Chat = () => {
         return;
       }
 
-      const response = await fetch(`http://192.168.1.25:3000/usuarios/buscar/agentes`, {
+      const response = await fetch(`http://192.168.1.29:3000/usuarios/buscar/agentes`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -129,7 +141,7 @@ const Chat = () => {
         return;
       }
 
-      const response = await fetch(`http://192.168.1.25:3000/agentes`, {
+      const response = await fetch(`http://192.168.1.29:3000/agentes`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -158,7 +170,7 @@ const Chat = () => {
         return;
       }
 
-      const response = await fetch(`http://192.168.1.25:3000/historico/chat?usuario_id=${id}`, {
+      const response = await fetch(`http://192.168.1.29:3000/historico/chat?usuario_id=${id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -293,7 +305,7 @@ const Chat = () => {
     }
 
     try {
-      const response = await fetch(`http://192.168.1.25:3000/mensagens`, {
+      const response = await fetch(`http://192.168.1.29:3000/mensagens`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -309,7 +321,7 @@ const Chat = () => {
 
       const data = await response.json();
       console.log('Resposta recebida do backend Node:', data);
-      
+
       const botResponse: Message = {
         id: messages.length + 2,
         text: data.response,
@@ -341,9 +353,9 @@ const Chat = () => {
 
       console.log("Tentando deletar chat com ID:", chatId);
       // CORREÇÃO: Remova o /historico/ da URL
-      console.log("URL da requisição:", `http://192.168.1.25:3000/chats/${chatId}`);
+      console.log("URL da requisição:", `http://192.168.1.29:3000/chats/${chatId}`);
 
-      const response = await fetch(`http://192.168.1.25:3000/chats/${chatId}`, {
+      const response = await fetch(`http://192.168.1.29:3000/chats/${chatId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -392,7 +404,7 @@ const Chat = () => {
       // CORREÇÃO: Use a URL correta (sem /historico/)
       const promises = historico.map(chat => {
         console.log(`Deletando chat: ${chat._id}`);
-        return fetch(`http://192.168.1.25:3000/chats/${chat._id}`, {
+        return fetch(`http://192.168.1.29:3000/chats/${chat._id}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -530,9 +542,32 @@ const Chat = () => {
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={80} // ajuste conforme necessário
+        behavior={Platform.OS === 'ios' ? 'padding' : "height"}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 100} // ajuste conforme necessário
       >
+        <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
+          <TouchableOpacity
+            style={{
+              paddingVertical: 8,
+              paddingHorizontal: 12,
+              backgroundColor: '#333',
+              borderRadius: 8,
+              marginRight: 8
+            }}
+            onPress={() => {
+              setChatId(null);
+              setAgenteSelecionado(null);
+              setMessages([
+                { id: 0, text: 'Olá! Como posso ajudar?', sender: 'bot' }
+              ]);
+              setInput('');
+            }}
+          >
+            <Text style={{ color: '#fff' }}> Voltar</Text>
+          </TouchableOpacity>
+
+
+        </View>
         <FlatList
           data={messages}
           keyExtractor={(item) => item.id.toString()}
@@ -580,7 +615,8 @@ export default Chat;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1A1A1A'
+    backgroundColor: '#1A1A1A',
+    paddingBottom: 50
   },
   title: {
     color: '#fff',
@@ -616,6 +652,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     padding: 10,
+    // paddingBottom: Platform.OS === 'android' ? 55 : 50,
     borderTopWidth: 1,
     borderColor: '#444',
     alignItems: 'center',

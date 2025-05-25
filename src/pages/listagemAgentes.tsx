@@ -27,7 +27,7 @@ const ListagemAgentes = () => {
                 return;
             }
 
-            const response = await fetch(`http://192.168.1.25:3000/agentes`, {
+            const response = await fetch(`http://192.168.1.29:3000/agentes`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -85,7 +85,7 @@ const ListagemAgentes = () => {
                 return;
             }
 
-            const response = await fetch(`http://192.168.1.25:3000/agentes/${agenteEditando.id}`, {
+            const response = await fetch(`http://192.168.1.29:3000/agentes/${agenteEditando.id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -127,7 +127,7 @@ const ListagemAgentes = () => {
                     {
                         text: "Excluir",
                         onPress: async () => {
-                            const response = await fetch(`http://192.168.1.25:3000/agentes/${agenteId}`, {
+                            const response = await fetch(`http://192.168.1.29:3000/agentes/${agenteId}`, {
                                 method: "DELETE",
                                 headers: {
                                     "Content-Type": "application/json",

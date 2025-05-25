@@ -77,7 +77,7 @@ const CadastroAgentes = () => {
         formData.append("documento", file);
 
         try {
-            const response = await fetch(`http://192.168.1.25:3000/cadastro/agente`, {
+            const response = await fetch(`http://192.168.1.29:3000/cadastro/agente`, {
                 method: 'POST',
                 body: formData,
             });
