@@ -53,7 +53,7 @@ const ListagemUsuarios = () => {
         try {
             const token = await AsyncStorage.getItem("userToken");
 
-            const response = await fetch(`http://192.168.1.25:3000/usuarios/${id}/status`, {
+            const response = await fetch(`${API_URL}/usuarios/${id}/status`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -103,7 +103,7 @@ const ListagemUsuarios = () => {
                 return;
             }
 
-            const response = await fetch(`http://192.168.1.25:3000/usuarios`, {
+            const response = await fetch(`${API_URL}/usuarios`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -213,7 +213,7 @@ const ListagemUsuarios = () => {
         }
 
         try {
-            const response = await fetch(`http://192.168.1.25:3000/atualizar/usuarios/${id}`, {
+            const response = await fetch(`${API_URL}/atualizar/usuarios/${id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",

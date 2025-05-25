@@ -5,6 +5,7 @@ import { useState } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import RNPickerSelect from 'react-native-picker-select';
+import { API_URL } from '@env';
 
 const CadastroUsuario = () => {
     const [nome, setNome] = useState("");
@@ -74,7 +75,7 @@ const CadastroUsuario = () => {
         console.log("Dados enviados:", dados);
 
         try {
-            const response = await fetch('http://192.168.5.239:3000/cadastro/usuario', {
+            const response = await fetch(`${API_URL}/cadastro/usuario`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

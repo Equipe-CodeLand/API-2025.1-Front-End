@@ -23,7 +23,7 @@ const PermissaoUsuarioPainel = () => {
         return;
       }
 
-      const response = await fetch(`http://192.168.1.25:3000/agentes/${agenteId}/usuarios`, {
+      const response = await fetch(`${API_URL}/agentes/${agenteId}/usuarios`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -71,8 +71,8 @@ const PermissaoUsuarioPainel = () => {
       }
 
       const url = isChecked
-        ? `http://192.168.1.25:3000/agentes/${usuarioId}/habilitar`
-        : `http://192.168.1.25:3000/agentes/${usuarioId}/desabilitar`;
+        ? `${API_URL}/agentes/${usuarioId}/habilitar`
+        : `${API_URL}/agentes/${usuarioId}/desabilitar`;
 
       const response = await fetch(url, {
         method: "PUT",
@@ -119,7 +119,7 @@ const PermissaoUsuarioPainel = () => {
       }
 
       for (const usuario of usuarios) {
-        await fetch(`http://192.168.1.25:3000/agentes/${usuario.id}/desabilitar`, {
+        await fetch(`${API_URL}/agentes/${usuario.id}/desabilitar`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
