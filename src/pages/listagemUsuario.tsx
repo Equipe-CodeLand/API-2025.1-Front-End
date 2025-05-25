@@ -506,10 +506,10 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     titulo: {
-        fontSize: 31,
+        fontSize: 30,
         fontWeight: "500",
         color: "#fff",
-        fontFamily: "Montserrat_500Medium",
+        textAlign: "center",
     },
     comentario: {
         marginTop: 20,

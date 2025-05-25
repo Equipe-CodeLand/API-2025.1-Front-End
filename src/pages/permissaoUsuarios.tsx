@@ -5,6 +5,7 @@ import { CheckBox } from "react-native-elements";
 import { useEffect, useState } from "react";
 import { API_URL } from '@env'; // <- aqui a mágica acontece
 import BarraPesquisaComponent from "../components/barraPesquisa";
+import React from "react";
 
 const PermissaoUsuarioPainel = () => {
   const route = useRoute();

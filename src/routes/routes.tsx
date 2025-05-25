@@ -11,6 +11,7 @@ import ListagemAgentes from '../pages/listagemAgentes';
 import ListagemUsuarios from '../pages/listagemUsuario';
 import PermissaoUsuarioPainel from '../pages/permissaoUsuarios';
 import CadastroUsuario from '../pages/cadastroUsuario';
+import Dashboard from '../pages/dashboard';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -61,6 +62,7 @@ const DrawerNavigator = ({ navigation }: any) => {
           <Drawer.Screen name="Painel de Agentes" component={ListagemAgentes} />
           <Drawer.Screen name="Cadastro de Usuário" component={CadastroUsuario} />
           <Drawer.Screen name="Painel de Usuários" component={ListagemUsuarios} />
+          <Drawer.Screen name="Dashboard" component={Dashboard} />
           <Drawer.Screen
             name="Tela de permissões"
             component={PermissaoUsuarioPainel}

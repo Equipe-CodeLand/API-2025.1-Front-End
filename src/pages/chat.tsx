@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   View,
   Text,
@@ -17,6 +16,7 @@ import { API_URL } from '@env';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import Feather from 'react-native-vector-icons/Feather';
+import { useLayoutEffect } from 'react';
 
 interface Agente {
   id: number;
@@ -47,8 +47,12 @@ interface HistoricoChat {
   titulo: string;
   mensagens: MensagemHistorico[];
 }
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 const Chat = () => {
+  const navigation = useNavigation();
   const [agentes, setAgentes] = useState<Agente[]>([]);
   const [agenteSelecionado, setAgenteSelecionado] = useState<Agente | null>(null);
   const [chatId, setChatId] = useState<string | null>(null);
@@ -61,9 +65,81 @@ const Chat = () => {
 
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([
-    { id: 0, text: 'Olá! Como posso ajudar?', sender: 'bot' }
+
   ]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const registrarAcesso = async () => {
+      if (!agenteSelecionado) return; // Só executa se tiver agente
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+
+        if (!token) {
+          console.error('Token não encontrado');
+          return;
+        }
+
+        const response = await fetch('${API_URL}/acesso/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            agente_id: agenteSelecionado.id,
+            agente_nome: agenteSelecionado.setor || 'ChatBot'
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.text();
+          console.error('Erro na resposta do servidor ao registrar acesso:', errorData);
+        } else {
+          console.log('Acesso registrado com sucesso.');
+        }
+
+      } catch (error) {
+        console.error('Erro ao registrar acesso:', error);
+      }
+    };
+
+    if (agenteSelecionado) {
+      registrarAcesso();
+    }
+  }, [agenteSelecionado]);
+
+  useLayoutEffect(() => {
+    if (chatId) {
+      navigation.setOptions({
+        headerLeft: () => (
+          <TouchableOpacity
+            style={{
+              marginLeft: 10,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 8,
+            }}
+            onPress={() => {
+              setChatId(null);
+              setAgenteSelecionado(null);
+              setMessages([
+                { id: 0, text: 'Olá! Como posso ajudar?', sender: 'bot' }
+              ]);
+              setInput('');
+            }}
+          >
+            <Ionicons name="chevron-back" size={24} color="white" />
+          </TouchableOpacity>
+        ),
+      });
+    } else {
+      navigation.setOptions({
+        headerLeft: undefined, // Remove o botão se não tiver chat ativo
+      });
+    }
+  }, [chatId, navigation]);
+
 
   const handleBuscarAgentes = async () => {
     try {
@@ -281,7 +357,7 @@ const Chat = () => {
 
       const data = await response.json();
       console.log('Resposta recebida do backend Node:', data);
-      
+
       const botResponse: Message = {
         id: messages.length + 2,
         text: data.response,
@@ -502,9 +578,33 @@ const Chat = () => {
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={80} // ajuste conforme necessário
+        behavior={Platform.OS === 'ios' ? 'padding' : "height"}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 100} // ajuste conforme necessário
       >
+        {/* <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
+          <TouchableOpacity
+            style={{
+              paddingVertical: 8,
+              paddingHorizontal: 12,
+              backgroundColor: '#333',
+              borderRadius: 8,
+              marginRight: 8
+            }}
+            onPress={() => {
+              setChatId(null);
+              setAgenteSelecionado(null);
+              setMessages([
+                { id: 0, text: 'Olá! Como posso ajudar?', sender: 'bot' }
+              ]);
+              setInput('');
+            }}
+          >
+            <Text style={{ color: '#fff' }}> Voltar</Text>
+          </TouchableOpacity> 
+
+
+        </View>
+          */}
         <FlatList
           data={messages}
           keyExtractor={(item) => item.id.toString()}
@@ -552,7 +652,8 @@ export default Chat;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1A1A1A'
+    backgroundColor: '#1A1A1A',
+    paddingBottom: 50
   },
   title: {
     color: '#fff',
@@ -588,6 +689,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     padding: 10,
+    // paddingBottom: Platform.OS === 'android' ? 55 : 50,
     borderTopWidth: 1,
     borderColor: '#444',
     alignItems: 'center',
