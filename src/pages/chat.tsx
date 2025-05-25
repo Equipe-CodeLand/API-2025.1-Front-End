@@ -80,7 +80,7 @@ const Chat = () => {
           return;
         }
 
-        const response = await fetch('${API_URL}/acesso/chat', {
+        const response = await fetch(`${API_URL}/acesso/chat`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
