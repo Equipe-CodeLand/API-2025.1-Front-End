@@ -80,7 +80,7 @@ const Chat = () => {
           return;
         }
 
-        const response = await fetch('http://192.168.1.29:3000/acesso/chat', {
+        const response = await fetch('${API_URL}/acesso/chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ const Chat = () => {
         return;
       }
 
-      const response = await fetch(`http://192.168.1.29:3000/usuarios/buscar/agentes`, {
+      const response = await fetch(`${API_URL}/usuarios/buscar/agentes`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -177,7 +177,7 @@ const Chat = () => {
         return;
       }
 
-      const response = await fetch(`http://192.168.1.29:3000/agentes`, {
+      const response = await fetch(`${API_URL}/agentes`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -206,7 +206,7 @@ const Chat = () => {
         return;
       }
 
-      const response = await fetch(`http://192.168.1.29:3000/historico/chat?usuario_id=${id}`, {
+      const response = await fetch(`${API_URL}/historico/chat?usuario_id=${id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -341,7 +341,7 @@ const Chat = () => {
     }
 
     try {
-      const response = await fetch(`http://192.168.1.29:3000/mensagens`, {
+      const response = await fetch(`${API_URL}/mensagens`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -389,9 +389,9 @@ const Chat = () => {
 
       console.log("Tentando deletar chat com ID:", chatId);
       // CORREÇÃO: Remova o /historico/ da URL
-      console.log("URL da requisição:", `http://192.168.1.29:3000/chats/${chatId}`);
+      console.log("URL da requisição:", `${API_URL}/chats/${chatId}`);
 
-      const response = await fetch(`http://192.168.1.29:3000/chats/${chatId}`, {
+      const response = await fetch(`${API_URL}/chats/${chatId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -440,7 +440,7 @@ const Chat = () => {
       // CORREÇÃO: Use a URL correta (sem /historico/)
       const promises = historico.map(chat => {
         console.log(`Deletando chat: ${chat._id}`);
-        return fetch(`http://192.168.1.29:3000/chats/${chat._id}`, {
+        return fetch(`${API_URL}/chats/${chat._id}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",

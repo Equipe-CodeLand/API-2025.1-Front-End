@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Acesso } from '../interface/Acesso';
 import { BarChart, PieChart } from 'react-native-chart-kit';
+import { API_URL } from '@env';
 
 const Dashboard = () => {
   const [acessos, setAcessos] = useState<Acesso[]>([]);
@@ -23,7 +24,7 @@ const Dashboard = () => {
   const fetchAcessos = useCallback(async () => {
     try {
       if (!refreshing) setLoading(true);
-      const response = await fetch('http://192.168.1.29:3000/acessos');
+      const response = await fetch(`${API_URL}/acessos`);
       const data = await response.json();
       setAcessos(data);
     } catch (error) {
